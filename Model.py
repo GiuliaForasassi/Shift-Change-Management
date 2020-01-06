@@ -1,5 +1,11 @@
 from gurobipy import *
-from Data import *
+import datetime
+from beautifultable import BeautifulTable
+
+from Random_Data import *
+from Preprocessing import *
+
+history = preprocess_history(history, contracts, nurses)
 
 # model constructor
 model = Model('Nurse_Competition')
@@ -61,6 +67,7 @@ worked_day = model.addVars(nurses_ids, days, vtype=GRB.BINARY, name='Worked_Day'
 # binary variable that tell me if a nurse should have worked that day
 required_worked_day = model.addVars(nurses_ids, days, vtype=GRB.BINARY, name='Required_Worked_Day')
 
+# S2 MIN
 # contraint --> or
 model.addConstrs(worked_day[nurse_id, day] >= assignment[nurse_id, shift, day]
                 for nurse_id in nurses_ids
@@ -77,7 +84,7 @@ model.addConstrs(worked_day[nurse_id, days[d+1]] >= assignment[nurse_id, 'night'
                 for nurse_id in nurses_ids
                 for d in range(len(days) - 1))
 
-# contraints that link the two biry variables: worked_day and required_worked_day
+# contraints that link the two binary variables: worked_day and required_worked_day
 model.addConstrs(required_worked_day[nurse_id, day] >= worked_day[nurse_id, day]
                 for nurse_id in nurses_ids
                 for day in days)
@@ -89,33 +96,97 @@ model.addConstrs(required_worked_day[nurse_id, days[d+n]] >= (required_worked_da
                 for n in range(0, contracts[nurses[nurse_id]['contract_type']]['min_cons_working_days'])
                 for d in range(1, len(days) - n))
 
+# case in which the first day the nurse works
+model.addConstrs(required_worked_day[nurse_id, days[n]] >= required_worked_day[nurse_id, days[0]]
+                for nurse_id in nurses_ids
+                for n in range(1, contracts[nurses[nurse_id]['contract_type']]['min_cons_working_days'] - history[nurse_id]['num_cons_shift']))
+
+# constraint that manage the case in which there are a number of worked days < min_worked_days
+# if in the next assignement are all 0, I have to pay 
+model.addConstrs(required_worked_day[nurse_id, days[0]] == 1
+                for nurse_id in nurses_ids
+                if 0 < history[nurse_id]['num_cons_shift'] < contracts[nurses[nurse_id]['contract_type']]['min_cons_working_days'])
+
 penalty_S2_min = quicksum(required_worked_day[nurse_id, day] - worked_day[nurse_id, day]
                         for nurse_id in nurses_ids
                         for day in days)
 
+# S2 MAX 
+# constraint that controls the maximum number of consecutive working days --> S2 MAX
+use_penalty_S2_max = model.addVars(nurses_ids, days, vtype=GRB.BINARY)
+# constraints that manage the new assignments (not the history)
+model.addConstrs(use_penalty_S2_max[nurse_id, day] >= 0 for nurse_id in nurses_ids for day in days)
+model.addConstrs((use_penalty_S2_max[nurse_id, days[d]] >= (quicksum(worked_day[nurse_id, days[i]] for i in range(d - contracts[nurses[nurse_id]['contract_type']]['max_cons_working_days'], d+1))
+                                        - contracts[nurses[nurse_id]['contract_type']]['max_cons_working_days']))
+                                        for nurse_id in nurses_ids
+                                        for d in range(contracts[nurses[nurse_id]['contract_type']]['max_cons_working_days'], len(days)))
 
-# TODO: contraint that controls the maximum number of consecutive working days --> S2 MAX
+# constraints that manage the history
+# this constraint enforce the first penalty to be 1 when history==max and worked_day[0]==1
+model.addConstrs((use_penalty_S2_max[nurse_id, days[0]] >= (history[nurse_id]['num_cons_shift'] + worked_day[nurse_id, days[0]]
+                                        - contracts[nurses[nurse_id]['contract_type']]['max_cons_working_days']))
+                                        for nurse_id in nurses_ids
+                                        )
+
+# this constraint enforce the penalty to be 1 when the previous penalty is 1 and the related worked_day is 1
+model.addConstrs((use_penalty_S2_max[nurse_id, days[d]] >= worked_day[nurse_id, days[d]] + use_penalty_S2_max[nurse_id, days[d-1]] - 1)
+                                        for nurse_id in nurses_ids
+                                        for d in range(1, contracts[nurses[nurse_id]['contract_type']]['max_cons_working_days']))
+
+penalty_S2_max = quicksum(use_penalty_S2_max[nurse_id, day] for nurse_id in nurses_ids for day in days)
 
 # S3: CONSECUTIVE DAYS OFF
 required_day_off = model.addVars(nurses_ids, days, vtype=GRB.BINARY, name='Required_Day_Off')
 
-# contraints that link the two biry variables: worked_day and required_day_off
+# S3 MIN
+# constraints that link the two binary variables: worked_day and required_day_off
 model.addConstrs(required_day_off[nurse_id, day] >= (1 - worked_day[nurse_id, day])
                 for nurse_id in nurses_ids
                 for day in days)
 
-# contraint that controls the minimum number of consecutive days off
+# constraint that controls the minimum number of consecutive days off
 # case: 1 --> 0 so when the nurse ends to work
 model.addConstrs(required_day_off[nurse_id, days[d+n]] >= (required_day_off[nurse_id, days[d]] - required_day_off[nurse_id, days[d-1]])
                 for nurse_id in nurses_ids
                 for n in range(0, contracts[nurses[nurse_id]['contract_type']]['min_cons_days_off'])
                 for d in range(1, len(days) - n))
 
+model.addConstrs(required_day_off[nurse_id, days[n]] >= required_day_off[nurse_id, days[0]]
+                for nurse_id in nurses_ids
+                for n in range(0, contracts[nurses[nurse_id]['contract_type']]['min_cons_days_off'] - history[nurse_id]['num_cons_days_off']))
+
+# constraint that manage the case in which there are a number of days-off (history) < min_days_off
+# if in the next assignement are all 1, I have to pay 
+model.addConstrs(required_day_off[nurse_id, days[0]] == 1
+                for nurse_id in nurses_ids
+                if 0 < history[nurse_id]['num_cons_days_off'] < contracts[nurses[nurse_id]['contract_type']]['min_cons_days_off'])
+
 penalty_S3_min = quicksum(required_day_off[nurse_id, day] - (1 - worked_day[nurse_id, day])
                         for nurse_id in nurses_ids
                         for day in days)
 
-# TODO: constraint that controls the maximum number of consecutive days off --> S3 MAX
+# S3 MAX
+# constraint that controls the maximum number of consecutive days off --> S3 MAX
+use_penalty_S3_max = model.addVars(nurses_ids, days, vtype=GRB.BINARY)
+model.addConstrs(use_penalty_S3_max[nurse_id, day] >= 0 for nurse_id in nurses_ids for day in days)
+model.addConstrs((use_penalty_S3_max[nurse_id, days[d]] >= (quicksum(1 - worked_day[nurse_id, days[i]] for i in range(d - contracts[nurses[nurse_id]['contract_type']]['max_cons_days_off'], d+1))
+                                        - contracts[nurses[nurse_id]['contract_type']]['max_cons_days_off']))
+                                        for nurse_id in nurses_ids
+                                        for d in range(contracts[nurses[nurse_id]['contract_type']]['max_cons_days_off'], len(days)))
+
+# constraints that manage the history
+# this constraint enforce the first penalty to be 1 when history==max and worked_day[0]==0
+model.addConstrs((use_penalty_S3_max[nurse_id, days[0]] >= (history[nurse_id]['num_cons_days_off'] + 1 - worked_day[nurse_id, days[0]]
+                                        - contracts[nurses[nurse_id]['contract_type']]['max_cons_days_off']))
+                                        for nurse_id in nurses_ids
+                                        )
+
+# this constraint enforce the penalty to be 1 when the previous penalty is 1 and the related worked_day is 0
+model.addConstrs((use_penalty_S3_max[nurse_id, days[d]] >= use_penalty_S3_max[nurse_id, days[d-1]] - worked_day[nurse_id, days[d]])
+                                        for nurse_id in nurses_ids
+                                        for d in range(1, contracts[nurses[nurse_id]['contract_type']]['max_cons_days_off']))
+
+penalty_S3_max = quicksum(use_penalty_S3_max[nurse_id, day] for nurse_id in nurses_ids for day in days)
 
 # S4: PREFERENCES 
 penalty_S4 = quicksum(assignment[nurse_id, shift, day] for (nurse_id, day, shift) in permit_requests)
@@ -210,7 +281,7 @@ penalty_S7 = quicksum(use_penalty_S7[nurse_id] * (quicksum(worked_weekend[nurse_
 
 # OBJECTIVE FUNCTION
 #obj = 0 + lambdaS1 * penalty_S1 + lambdaS2_min * penalty_S2_min + lambdaS3 * penalty_S3_min + lambdaS4 * penalty_S4 + lambdaS5 * penalty_S5 + lambdaS6 * penalty_S6_min + lambdaS6 * penalty_S6_max + lambdaS7 * penalty_S7
-obj = lambdaS2_min * penalty_S2_min + lambdaS3 * penalty_S3_min + lambdaS4 * penalty_S4 + lambdaS5 * penalty_S5 + lambdaS7 * penalty_S7
+obj = lambdaS2_min * penalty_S2_min + lambdaS2_max * penalty_S2_max + lambdaS3 * (penalty_S3_min + penalty_S3_max) + lambdaS4 * penalty_S4 + lambdaS5 * penalty_S5 + lambdaS7 * penalty_S7
 model.setObjective(obj, GRB.MINIMIZE)
 model.optimize()
 
@@ -223,6 +294,37 @@ model.optimize()
 #     #    total_assignements += v.X
 
 #print("total_assignements: " + str(total_assignements))
+
+
+# for nurse_id in nurses_ids:
+#         for shift in shift_types:
+#                 for day in days:
+#                         print(assignment[nurse_id, shift, day].X)
+
+#x = datetime.datetime.now()
+first_day = datetime.datetime(2020, 1, 6)
+
+datetimes = [first_day + datetime.timedelta(days=d) for d in range(len(days))]
+datetimes_str = [date.strftime("%A\n%d %b %y") for date in datetimes]
+
+# OUTPUT DISPLAY
+table = BeautifulTable()
+table.set_style(BeautifulTable.STYLE_SEPARATED)
+table.max_table_width = 2000
+table.column_headers = ["Nurse"] + datetimes_str
+for nurse_id in nurses_ids:
+        nurse_shifts = []
+        for day in days:
+                letter = " "
+                for shift in shift_types:
+                        if assignment[nurse_id, shift, day].X == 1:
+                                letter = shift.upper()[0]
+                                break
+                nurse_shifts.append(letter)
+
+        table.append_row([nurses[nurse_id]['name']] + nurse_shifts)
+print(table)
+
 
 # OUTPUT SOLUTION FILE
 model.write("nurse-competition-output.sol")
