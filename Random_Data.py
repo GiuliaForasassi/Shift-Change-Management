@@ -77,11 +77,12 @@ days = [day + '-' + str(t) for t in range(num_time_periods) for day in week]
 # minimum and optimum number of nurses
 minimum_nurses = {}
 optimum_nurses = {}
+range_for_shift = {"morning": (10,15), "afternoon": (4,8), "night": (2,4)}
 for day in days:
     for shift in shift_types:
         for skill in skills:
-            minimum_nurses[day, shift, skill] = random.randint(1, 2)
-            optimum_nurses[day, shift, skill] = random.randint(minimum_nurses[day, shift, skill], 2 * minimum_nurses[day, shift, skill] + 1)
+            minimum_nurses[day, shift, skill] = random.randint(*range_for_shift[shift])
+            optimum_nurses[day, shift, skill] = random.randint(minimum_nurses[day, shift, skill], minimum_nurses[day, shift, skill] + 2)
 
 
 # nurse requests: not to work that day in that shift

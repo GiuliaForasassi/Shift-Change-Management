@@ -44,21 +44,15 @@ model.addConstrs(((assignment[nurse_id, shiftA, days[d]] + assignment[nurse_id, 
 # SOFT CONSTRAINTS 
 
 # S1: INSUFFICIENT STAFFING FOR OPTIMAL COVERAGE
-use_penalty_S1 = model.addVars(shift_types, skills, days, vtype=GRB.BINARY, name='S1')
-model.addConstrs(((use_penalty_S1[shift, skill, day] == 0) >> (quicksum(assignment[nurse_id, shift, day] for nurse_id in nurses_ids if skill in nurses[nurse_id]['skills']) >= optimum_nurses[day, shift, skill])
-                                for shift in shift_types
-                                for day in days
-                                for skill in skills))
+penalty_S1 = model.addVars(shift_types, skills, days, vtype=GRB.INTEGER, name='S1')
 
-model.addConstrs(((use_penalty_S1[shift, skill, day] == 1) >> (quicksum(assignment[nurse_id, shift, day] for nurse_id in nurses_ids if skill in nurses[nurse_id]['skills']) <= optimum_nurses[day, shift, skill])
-                                for shift in shift_types
-                                for day in days
-                                for skill in skills))
+model.addConstrs(penalty_S1[shift, skill, day] >= 0 for shift in shift_types for skill in skills for day in days)
 
-penalty_S1 = quicksum(use_penalty_S1[shift, skill, day] * (optimum_nurses[day, shift, skill] - quicksum(assignment[nurse_id, shift, day] for nurse_id in nurses_ids if skill in nurses[nurse_id]['skills']))
-                                for shift in shift_types
-                                for day in days
-                                for skill in skills)
+# when the costraint is not respected 
+model.addConstrs((penalty_S1[shift, skill, day] >= (optimum_nurses[day, shift, skill] - quicksum(assignment[nurse_id, shift, day]
+                for nurse_id in nurses_ids if skill in nurses[nurse_id]['skills']))) for skill in skills for shift in shift_types)
+
+penalty_S1_tot = quicksum(penalty_S1[shift, skill, day] for shift in shift_types for skill in skills for day in days)
 
 
 # S2: CONSECUTIVE ASSIGNMENTS
@@ -205,49 +199,19 @@ penalty_S5 = quicksum(worked_only_saturday[nurse_id, d] + worked_only_sunday[nur
 
 
 # S6: TOTAL ASSIGNMENTS
-use_penalty_S6_min = model.addVars(nurses_ids, vtype=GRB.BINARY, name='S6_min')
-use_penalty_S6_max = model.addVars(nurses_ids, vtype=GRB.BINARY, name='S6_max')
+penalty_S6 = model.addVars(nurses_ids, vtype=GRB.INTEGER, name='S6_min')
 
-model.addConstrs((use_penalty_S6_min[nurse_id] == 0) >> 
-        ((quicksum(assignment[nurse_id, shift, day] for shift in shift_types for day in days))
-            >= contracts[nurses[nurse_id]['contract_type']]['min_assignments']
-        )
-        for nurse_id in nurses_ids
-)
-model.addConstrs((use_penalty_S6_min[nurse_id] == 1) >> 
-        ((quicksum(assignment[nurse_id, shift, day] for shift in shift_types for day in days))
-            <= contracts[nurses[nurse_id]['contract_type']]['min_assignments']
-        )
-        for nurse_id in nurses_ids
-)
+model.addConstrs(penalty_S6[nurse_id] >= 0 for nurse_id in nurses_ids)
+model.addConstrs(penalty_S6[nurse_id] >= (contracts[nurses[nurse_id]['contract_type']]['min_assignments'] 
+                - quicksum(assignment[nurse_id, shift, day] for shift in shift_types for day in days))
+                for nurse_id in nurses_ids)
+                
+model.addConstrs(penalty_S6[nurse_id] >= (quicksum(assignment[nurse_id, shift, day] for shift in shift_types for day in days) 
+                - contracts[nurses[nurse_id]['contract_type']]['max_assignments'])
+                for nurse_id in nurses_ids)
 
-model.addConstrs((use_penalty_S6_max[nurse_id] == 0) >> 
-        ((quicksum(assignment[nurse_id, shift, day] for shift in shift_types for day in days))
-            <= contracts[nurses[nurse_id]['contract_type']]['max_assignments']
-        )
-        for nurse_id in nurses_ids
-)
-model.addConstrs((use_penalty_S6_max[nurse_id] == 1) >> 
-        ((quicksum(assignment[nurse_id, shift, day] for shift in shift_types for day in days))
-            >= contracts[nurses[nurse_id]['contract_type']]['max_assignments']
-        )
-        for nurse_id in nurses_ids
-)
+penalty_S6_tot = quicksum(penalty_S6[nurse_id] for nurse_id in nurses_ids)
 
-penalty_S6_min = quicksum(use_penalty_S6_min[nurse_id] * 
-        (contracts[nurses[nurse_id]['contract_type']]['min_assignments'] 
-                - (quicksum(assignment[nurse_id, shift, day] for shift in shift_types for day in days))
-        )
-        for nurse_id in nurses_ids
-)
-        
-penalty_S6_max = quicksum(use_penalty_S6_max[nurse_id] * 
-        ((quicksum(assignment[nurse_id, shift, day] for shift in shift_types for day in days))
-                - contracts[nurses[nurse_id]['contract_type']]['max_assignments']
-        )
-
-        for nurse_id in nurses_ids
-)
         
 #S7: TOTAL WORKING WEEK-ENDS
 # binary variable, for each nurse and each weekend, which is one if the nurse worked both Saturday and Sunday
@@ -255,52 +219,31 @@ worked_weekend = model.addVars(nurses_ids, saturdays, vtype=GRB.BINARY, name='Wo
 model.addConstrs(worked_weekend[nurse_id, d] >= assignment[nurse_id, shift, days[d]] 
                 for shift in shift_types
                 for nurse_id in nurses_ids
-                for d in saturdays
-)
+                for d in saturdays)
 
 model.addConstrs(worked_weekend[nurse_id, d] >= assignment[nurse_id, shift, days[d+1]] 
                 for shift in shift_types
                 for nurse_id in nurses_ids
-                for d in saturdays
-)
+                for d in saturdays)
 
-use_penalty_S7 = model.addVars(nurses_ids, vtype=GRB.BINARY)
+penalty_S7 = model.addVars(nurses_ids, vtype=GRB.INTEGER)
 
-model.addConstrs((use_penalty_S7[nurse_id] == 0) >> (quicksum(worked_weekend[nurse_id, d] for d in saturdays) 
-        <= contracts[nurses[nurse_id]['contract_type']]['max_working_week_ends'])
-                for nurse_id in nurses_ids
-)
-model.addConstrs((use_penalty_S7[nurse_id] == 1) >> (quicksum(worked_weekend[nurse_id, d] for d in saturdays) 
-        >= contracts[nurses[nurse_id]['contract_type']]['max_working_week_ends'])
-                for nurse_id in nurses_ids
-)
+model.addConstrs(penalty_S7[nurse_id] >= 0 for nurse_id in nurses_ids)
+model.addConstrs(penalty_S7[nurse_id] >= quicksum(worked_weekend[nurse_id, d] for d in saturdays) 
+                - contracts[nurses[nurse_id]['contract_type']]['max_working_week_ends']
+                for nurse_id in nurses_ids)
 
-penalty_S7 = quicksum(use_penalty_S7[nurse_id] * (quicksum(worked_weekend[nurse_id, d] for d in saturdays) - 
-               contracts[nurses[nurse_id]['contract_type']]['max_working_week_ends'])
-               for nurse_id in nurses_ids)
+
+penalty_S7_tot = quicksum(penalty_S7[nurse_id] for nurse_id in nurses_ids)
+
 
 # OBJECTIVE FUNCTION
 #obj = 0 + lambdaS1 * penalty_S1 + lambdaS2_min * penalty_S2_min + lambdaS3 * penalty_S3_min + lambdaS4 * penalty_S4 + lambdaS5 * penalty_S5 + lambdaS6 * penalty_S6_min + lambdaS6 * penalty_S6_max + lambdaS7 * penalty_S7
-obj = lambdaS2_min * penalty_S2_min + lambdaS2_max * penalty_S2_max + lambdaS3 * (penalty_S3_min + penalty_S3_max) + lambdaS4 * penalty_S4 + lambdaS5 * penalty_S5 + lambdaS7 * penalty_S7
+obj = lambdaS1 * penalty_S1_tot + lambdaS2_min * penalty_S2_min + lambdaS2_max * penalty_S2_max + lambdaS3 * (penalty_S3_min + penalty_S3_max) + lambdaS4 * penalty_S4 + lambdaS5 * penalty_S5 + lambdaS6 * penalty_S6_tot + lambdaS7 * penalty_S7_tot
 model.setObjective(obj, GRB.MINIMIZE)
 model.optimize()
 
-# total_assignements = 0
-# for v in model.getVars():
-#     #if v.X != 0:
-#     #if "Worked_Day" in v.Varname and "Required" not in v.Varname and v.X == 0:
-#         print("%s %f\n" % (v.Varname, v.X))
-#     #if "Assignment" in v.Varname:
-#     #    total_assignements += v.X
-
-#print("total_assignements: " + str(total_assignements))
-
-
-# for nurse_id in nurses_ids:
-#         for shift in shift_types:
-#                 for day in days:
-#                         print(assignment[nurse_id, shift, day].X)
-
+#TIME
 #x = datetime.datetime.now()
 first_day = datetime.datetime(2020, 1, 6)
 
@@ -329,3 +272,18 @@ print(table)
 # OUTPUT SOLUTION FILE
 model.write("nurse-competition-output.sol")
 
+# total_assignements = 0
+# for v in model.getVars():
+#     #if v.X != 0:
+#     #if "Worked_Day" in v.Varname and "Required" not in v.Varname and v.X == 0:
+#         print("%s %f\n" % (v.Varname, v.X))
+#     #if "Assignment" in v.Varname:
+#     #    total_assignements += v.X
+
+#print("total_assignements: " + str(total_assignements))
+
+
+# for nurse_id in nurses_ids:
+#         for shift in shift_types:
+#                 for day in days:
+#                         print(assignment[nurse_id, shift, day].X)
