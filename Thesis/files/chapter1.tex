@@ -1,0 +1,289 @@
+\chapter{Contenuti teorici}\label{ch:chapter1}
+
+\section{Ottimizzazione}
+In questo capitolo vengono spiegati i principali concetti teorici che costituiscono il fondamento del problema preso in esame; dapprima si presenteranno le nozioni che stanno alla base di un generale problema di ottimizzazione e successivamente si spiegheranno più nel dettaglio le caratteristiche principali della \textbf{Programmazione Lineare Intera}.
+
+\subsection{Problema di ottimizzazione}
+Un problema di ottimizzazione è un problema relativo alla scelta della soluzione migliore, detta \textbf{soluzione ottima}, tra quella disponibili in base ad un determinato criterio. Vi sono tre elementi principali che caratterizzano un problema di ottimizzazione:
+\begin{itemize}
+\item \textit{le variabili decisionali}: sono variabili di cui si deve determinare il valore ottimo;
+\item \textit{l'insieme ammissibile}: è l'insieme delle alternative disponibili per il decisore;
+\item \textit{la funzione obbiettivo}: indica la relazione funzionale tra le variabili decisionali e altre variabili il cui valore debba essere massimizzato o minimizzato; cioè, in altre parole, costituisce un criterio di scelta tra le possibili soluzioni del problema con l'intento di selezionare solo quelle migliori, cioè quelle che minimizzano il costo o massimizzano il profitto.
+\end{itemize}
+
+Quindi un'istanza di un problema di ottimizzazione è definita come una coppia (A, f), dove A è l'insieme delle soluzioni ammissibili ed $f: A \rightarrow \Re$ è la funzione obbiettivo che si deve ottimizzare (massimizzare o minimizzare).
+Il problema di ottimizzazione viene posto chiedendo di trovare i valori $x \in A$ tali che: $f(x) ~ \leq ~ f(y) ~~~ \forall y \in A$  (problema di minimizzazione).
+Tali valori x costituiscono delle soluzioni ottime \textbf{globali} per il problema; nel caso in cui risulti invece $f(x) ~ \leq ~ f(y) ~~~ \forall y \in ad ~ un ~ intorno ~ di ~ x$, allora la soluzione x si dice soluzione ottima \textbf{locale}. \\
+
+Nella formulazione di un problema di ottimizzazione un aspetto assai critico e rilevante è costituito dalla corretta definizione dell'insieme delle soluzioni ammissibili; è necessario delimitare questo sottoinsieme dello spazio delle soluzioni, senza escludere punti dello spazio che possano corrispondere ad una soluzione ammissibile e dunque potenzialmente ottima, e al tempo stesso cercando di ridurre al massimo l'insieme entro cui eseguire la ricerca delle soluzioni, per rendere più efficiente e meno oneroso, in termini computazionali, il procedimento di calcolo adottato per individuare le soluzioni ottime. In generale quindi l'insieme A delle soluzioni ammissibili viene definito attraverso un insieme di \textbf{vincoli} che limitano e circoscrivono l'insieme entro cui possono assumere valori le variabili del problema.
+
+In particolare tra i problemi di ottimizzazione rivestono notevole importanza i \textbf{problemi di programmazione matematica} dove i vincoli che circoscrivono l'insieme A delle soluzioni ammissibili sono costituiti da un certo numero, anche molto ampio ma finito, di equazioni o disequazioni. In generale, quindi, un problema di programmazione matematica viene definito come segue:
+\begin{equation}
+\begin{split}
+min ~ &f(x) \\
+g_i(x) ~ &\geq ~ 0 ~~~ \forall i \in \{1,..,m\} \\
+h_j(x) ~ &= ~ 0 ~~~ \forall i \in \{1,..,p\} \\
+\end{split}
+\end{equation}
+\\
+%Infine nel caso in cui il problema, di cui si vuole trovare la soluzione ottima, risulti molto complicato da risolvere può essere utile lavorare mediante il relativo \textbf{problema rilassato} il quale, risulta caratterizzato da un numero minore di condizioni vincolanti rispetto al problema di riferimento, e quindi appare molto più facile da risolvere.
+
+
+\subsection{Programmazione lineare}
+La programmazione lineare è quella branca della Ricerca Operativa che si occupa di studiare algoritmi di risoluzione per problemi di ottimizzazione lineari.
+Un problema è detto \textbf{lineare} se sia la funzione obbiettivo sia i vincoli sono funzioni lineari. Questo significa che la funzione obbiettivo può essere scritto come:
+\begin{equation}
+f ~ = ~ \sum_{i=1}^{N_v} ~ c_i ~ x_i ~ = ~ c^T ~ x 
+\end{equation}
+avendo indicato con:
+\begin{itemize}
+\item $N_v$: il numero delle variabili che descrivono il problema;
+\item $c$: il vettore colonna dei coefficienti $c_i$ della funzione obbiettivo;
+\item $x$: il vettore colonna delle variabili $x_i$;
+\item infine la T all'esponente indica l'operatore di trasposizione.
+\end{itemize}
+
+Esistono tre grandi classi di problemi lineari:
+\begin{enumerate}
+\item \textbf{Problemi lineari continui (LP)}: sono problemi che presentano al loro interno solo variabili continue, cioè variabili che possono assumere con continuità tutti i valori contenuti all'interno del loro dominio di esistenza.
+Per questi tipi di problemi il principale algoritmo di risoluzione è detto \textit{Algoritmo del Simplesso};
+\item \textbf{Problemi lineari interi (ILP)}: sono problemi lineari che presentano al loro interno solo variabili intere, cioè variabili che possono assumere solo i valori interi contenuti all'interno del loro dominio di esistenza.
+Per questa classe di problemi esiste un algoritmo di risoluzione molto importante, chiamato \textit{Branch and Bound};
+\item \textbf{Problemi lineari misto-interi (MILP)}: sono problemi che al loro interno presentano sia variabili intere che continue. L'algoritmo di risoluzione principale è detto \textit{Branch and Bound}.
+\end{enumerate}
+
+
+\section{Programmazione Lineare Intera}
+La Programmazione Lineare Intera tratta il problema della minimizzazione (o massimizzazione) di una funzione lineare di più variabili, soggetta a vincoli di uguaglianza e disuguaglianza lineari ed alla restrizione che tutte variabili possano assumere \textbf{solo valori interi}. Si tratta dunque di problemi del tipo:
+\begin{equation}
+\begin{split}
+& min ~ \sum_{j=1}^n ~ c_j x_j \\
+& \sum_{j=1}^n ~ a_{i, j} ~ x_j ~ = ~ b_i ~~~ \forall i \in \{1,...,m\} \\
+& x_j ~ \geq ~ 0 ~~~ \forall j \in \{1,...,n\} \\
+& x_j ~ \in \mathbb{N} ~~~ \forall j \in \{1,...,n\}
+\end{split}
+\end{equation}
+La stessa formulazione vale nel caso si voglia massimizzare la funzione obbiettivo.
+
+Moltissimi problemi reali possono essere rappresentati da modelli di Programmazione Lineare Intera; tipicamente si tratta di problemi in cui le variabili di decisione rappresentano quantità indivisibili oppure sono problemi caratterizzati dalla necessità di scegliere tra un numero finito di alternative diverse. In quest'ultimo caso, in particolare, si avranno problemi di \textbf{Programmazione Lineare Zero-Uno} o Binaria, cioè problemi in cui le variabili sono binarie e perciò possono assumere solo i valori 0 o 1.
+
+
+\subsection{Tecniche di modellazione}
+In questa sezione vengono presentate alcune tecniche di modellazione che facilitano la formulazione di problemi di programmazione lineare intera.
+
+\subsubsection*{Variabili binarie}
+Le variabili binarie vengono usate quando si vuole rappresentare un evento mediante la scelta tra 2 alternative disponibili, cioè:
+\begin{equation}
+\label{eq:varBinarie}
+x=
+\begin{cases}
+1, & \text{se l'evento si verifica,} \\
+0, & \text{altrimenti.}
+\end{cases}
+\end{equation}
+
+\subsubsection*{Vincoli logici}
+Spesso, nella formulazione di un problema di ottimizzazione è necessario imporre dei vincoli logici alle variabili decisionali, che vorremmo soddisfare, per trovare la soluzione ottima del problema preso in esame.
+Consideriamo il seguente vincolo:
+\begin{equation}
+f(x_1,...,x_n) ~ \leq ~ b
+\end{equation}
+
+Introduciamo la variabile binaria y tale che:
+\begin{equation}
+\label{eq:varVincoloSoddisfatto}
+y=
+\begin{cases}
+0, & \text{se il vincolo è soddisfatto,} \\
+1, & \text{altrimenti.}
+\end{cases}
+\end{equation}
+
+Quindi si può riscrivere i vincolo nel seguente modo:
+\begin{equation}
+f(x_1,...,x_n) - By ~ \leq ~ b
+\end{equation}
+dove B è una costante.
+
+\subsubsection*{Vincoli logici alternativi}
+Consideriamo la situazione in cui si hanno vincoli logici alternativi, in cui almeno uno di questi, non necessariamente entrambi, deve essere soddisfatto:
+\begin{equation}
+\begin{split}
+& f_1{(x_1,...,x_n)} ~ \leq ~ b_1 \\
+& f_2{(x_1,...,x_n)} ~ \leq ~ b_2 \\
+\end{split}
+\end{equation}
+
+Questa restrizione può essere modellata combinando la tecnica appena introdotta con un vincolo a scelta multipla come segue:
+\begin{equation}
+\begin{split}
+& f_1{(x_1,...,x_n)} - B_1y_1 ~ \leq ~ b_1 \\
+& f_2{(x_1,...,x_n)} - B_2y_2 ~ \leq ~ b_2 \\
+& y_1 + y_2 ~ \leq ~ 1 \\
+& y_1, y_2 ~ binarie \\
+\end{split}
+\end{equation}
+
+\subsubsection*{Vincoli logici condizionali}
+Questa classe di vincoli è caratterizzata dal fatto che tutti i vincoli sono dipendenti tra loro, cioè, in altre parole, dato un vincolo A esso implica un altro vincolo B.
+Matematicamente possiamo scrivere ciò:
+\begin{equation}
+f_1(x_1,...,x_n) ~ > ~ b_1 ~ \Longrightarrow ~ f_2(x_1,...,x_n) ~ \leq ~ b_2
+\end{equation}
+
+Poiché questa implicazione non è soddisfatta quando entrambi valgono, il vincolo condizionale è logicamente equivalente ai vincoli alternativi, e quindi di può riscrivere nel seguente modo:
+\begin{equation}
+f_1(x_1,...,x_n) ~ \leq ~ b_1 ~ and/or ~ f_2(x_1,...,x_n) ~ \leq ~ b_2
+\end{equation}
+dove almeno uno deve essere soddisfatto.
+
+
+\section{Algoritmi di ILP}
+Per la soluzione di problemi ILP non esistono metodi universalmente efficienti. Molto spesso è necessario utilizzare algoritmi \textit{ad hoc} che siano in grado di sfruttare la particolare struttura del problema.
+Esistono però dei metodi applicabili ad una larga classe di PLI, e questi si possono dividere in 3 principali categorie:
+\begin{enumerate}
+\item \textit{Algoritmi esatti}: questi tipi di algoritmi garantiscono di trovare una soluzione ottima, ma potrebbero richiedere un numero esponenziale di iterazioni. In questa categoria sono inclusi il metodo dei Piani di Taglio e l'algoritmo Branch and Bound;
+\item \textit{Algoritmi di approssimazione}: sono algoritmi che garantiscono sulla qualità della soluzione trovata;
+\item \textit{Algoritmi euristici}: sono algoritmi nei quali non si garantisce la qualità della soluzione.
+\end{enumerate} 
+
+Consideriamo un problema di Programmazione Lineare Intera:
+\begin{equation}
+\label{eq:progLinInt}
+\begin{cases}
+& min ~ c^T x \\
+& Ax ~ \geq ~ b \\
+& x ~ \geq ~ 0, ~ con ~ x ~ intero.
+\end{cases}
+\end{equation}
+assumendo che la regione ammissibile di tale problema sia costituita da un numero finito di punti.
+
+Di seguito verranno spiegati, dapprima due tecniche più banali che però non sono sempre possibili da applicare nella pratica, e successivamente i principali metodi per la risoluzione di problemi lineari interi come il metodo dei Piani di Taglio e l'algoritmo del Branch and Bound.
+
+\subsection{Enumerazione totale}
+In un problema di Programmazione Lineare binaria una soluzione ottima può essere determinata teoricamente \textbf{enumerando} tutte le possibili soluzioni ammissibili. In linea di principio, sarebbe possibile enumerare tutti i vettori binari a n componenti e determinare quelli ammissibili selezionando quelli corrispondenti al valore più basso della funzione obbiettivo.
+Purtroppo però, ciò è possibile solo per problemi di dimensioni molto ridotte in quanto c'è una crescita esponenziale dei vettori da esaminare con il numero delle variabili del problema.
+
+Quindi, l'enumerazione totale non rappresenta una tecnica praticabile se non in rari casi di problemi con un numero molto basso di variabili.
+
+\subsection{Soluzione approssimata per arrotondamento}
+Questa strategia si basa sull'idea di risolvere il \textbf{problema rilassato}, cioè il rilassamento lineare, e poi approssimare la soluzione non intera al punto a componenti intere \textit{più vicino}.
+
+Questa strategia sembrerebbe avere senso soprattutto se ci si aspetta che le variabili assumano valori abbastanza grandi, e quindi non costituisce un buon metodo nel caso in cui le variabili del problema assumano valori relativamente piccoli. Infatti nel caso di problemi di Programmazione Lineare Intera Binaria le variabili indicano scelte alternative e ogni arrotondamento può essere totalmente privo di senso. Inoltre anche nel caso in cui si possa trovare un punto ammissibile vicino al punto di ottimo del rilassamento lineare, in realtà, può accadere che tale punto sia molto lontano dalla soluzione ottima intera.
+
+\subsection{Metodi dei piani di taglio}
+Si consideri un problema di programmazione lineare intera del tipo:
+\begin{equation}
+\label{eq:problemaIntero}
+\begin{cases}
+& min ~ c^T x \\
+& Ax ~ = ~ b \\
+& x ~ \geq ~ 0 ~ con ~ x ~ intera \\ 
+\end{cases}
+\end{equation}
+e il corrispettivo problema rilassato:
+\begin{equation}
+\label{eq:problemaInteroRilass}
+\begin{cases}
+& min ~ c^T x \\
+& Ax ~ = ~ b \\
+& x ~ \geq ~ 0 \\
+\end{cases}
+\end{equation}
+
+L'idea principale nei metodi dei piani di taglio è risolvere il problema sopra definito trovando la soluzione di una sequenza di problemi di programmazione lineare intera.
+Ovvero, prima di tutto, viene risolto il rilassamento del problema originario trovando la sua soluzione ottima $x^*$; successivamente se questa soluzione è intera allora è anche soluzione ottima del problema originario (\ref{eq:problemaIntero}), altrimenti viene aggiunto un vincolo lineare al problema rilassato in modo tale che questa soluzione non sia tra quelle ammissibili per quello rilassato.
+L'efficienza di questo metodo dipende nella scelta del vincolo che viene aggiunto per escludere $x^*$ come soluzione del problema rilassato.
+
+Uno dei più famosi piani di taglio è chiamato \textit{piano di taglio di Gomory}.
+\subsection{Branch and Bound}
+Il Branch and Bound (BB), invece, è una metodologia di ricerca della soluzione ottima che effettua un'esplorazione parziale dell'insieme delle soluzioni ammissibili. In particolare la funzione obbiettivo viene calcolata per un sottoinsieme di cardinalità abbastanza piccola delle soluzioni ammissibili con la proprietà di contenere almeno una soluzione ottima.
+
+Facciamo riferimento al generico problema di Programmazione Lineare Intera definito in \eqref{eq:progLinInt}. Tale problema può essere riscritto nella forma:
+\begin{equation}
+\label{eq:probLin2}
+\begin{cases}
+& min ~ c^T x \\
+& x ~ \in ~ S \\
+\end{cases}
+\end{equation}
+dove $S ~ = ~ \{x ~ \in ~ \Re^n ~ | ~ Ax ~ \geq ~ b, ~ x ~ \geq ~ 0, ~ x ~ intero\}$ è l'insieme ammissibile che ha cardinalità finita e quindi il problema non può essere illimitato inferiormente.
+Indicheremo con $x^*$ l'ottimo del problema e con $z^* ~ = ~ c^T ~ x^*$ il suo valore ottimo corrispondente.
+
+La strategia è che alla base della tecnica del Branch and Bound vi è la decomposizione del problema originario in \textbf{sotto-problemi}.
+Questo viene realizzato effettuando una partizione dell'insieme ammissibile $S$ in una famiglia di sottoinsiemi $\{S_1,...,S_q\}$ con $q ~ \geq ~ 2$.
+
+A seguito di questa partizione si possono considerare q sotto-problemi che indichiamo con $Prob^{(i)}$ del tipo: 
+\begin{equation}
+\label{eq:sottoProb}
+\begin{cases}
+& min ~ c^T x \\
+& x ~ \in ~ S_i ~~~ con ~ i ~ \in ~ \{1,...,q\} \\
+\end{cases}
+\end{equation}
+
+Ora, se $x^{(i)}$ è l'ottimo dell'i-esimo sotto-problema $Prob^{(i)}$ e $z^{(i)} ~ = ~ c^T x^{(i)}$ il valore ottimo corrispondente, si ha che la soluzione ottima del problema originario è data dalla $x^{(i)}$ corrispondente al minimo tra i valori $z^{(i)}$.
+Identificando il problema originario con il $Prob^{(0)}$ e il suo insieme ammissibile con $S_0$, si può dire che i nuovi problemi generati sono figli del problema padre.
+Se un sotto-problema $Prob^{(i)}$ dovesse risultare, a sua volta, di difficile soluzione si può partizionare ulteriormente l'insieme $S_i$ producendo nuovi sotto-problemi e iterando la procedura finché il problema originale non risulti decomposto in problemi elementari di facile risoluzione.
+Questa generazione progressiva di processi figli produce un \textbf{albero di enumerazione}.\\
+
+In generale, però, non è detto che un sotto-problema sia più facile che risolvere il problema originario ed è per questo motivo che invece della soluzione esatta del problema $Prob^{(i)}$ si preferisce calcolare una limitazione inferiore detta \textit{lower bound} $L_i$ di $z^{(i)}$, cioè un valore $L_i ~ \leq ~ z^{(i)}$. Tale valore viene poi confrontato con il miglior valore della funzione obbiettivo trovato fino a quel momento che viene detto \textit{valore ottimo corrente} che indichiamo con $\tilde{z}$. Se $L_i$ risulta non inferiore a quello del valore ottimo corrente allora nell'insieme $S_i$ non esiste un punto in cui la funzione obbiettivo abbia un valore migliore di $\tilde{z}$. Questo permette di sospendere l'analisi del sotto-problema $Prob^{(i)}$ senza risolverlo e non considerandolo ulteriormente.
+
+La tecnica del \textbf{Branch and Bound} è caratterizzata da 2 \textbf{fasi} principali:
+\begin{enumerate}
+\item [I)] \textsc{fase di Bounding}: fase nel quale si calcola i lower bound dei sotto-problemi per capire  se è necessario scartare o no il sotto-problema considerato;
+\item [II)] \textsc{fase di Branching}: fase nella quale vengono venerati i sotto-problemi e quindi l'albero di enumerazione.
+\end{enumerate}
+
+Questo tipo di algoritmo sarà tanto più efficiente quanto migliori saranno i valori del lower bound, ed a loro volta tali valori approssimeranno tanto meglio il valore ottimo del sotto-problema quanto più efficace sarà stata la decomposizione del problema originario. Di conseguenza l'efficienza del metodo Branch and Bound dipende dalla qualità delle strategie che ne caratterizzano la struttura, che sono:
+\begin{itemize}
+\item [a)] Strategia di Bounding: serve per determinare i lower bound, cioè per calcolare un valore che approssimi per difetto il valore dei sotto-problemi;
+\item [b)] Strategia di Branching: viene utilizzata per determinare la partizione dell'insieme delle soluzioni ammissibili di un sotto-problema;
+\item [c)] Strategia per la scelta del sotto-problema da esaminare: ovvero come decidere, ad ogni iterazione, quale sotto-problema selezionare dalla lista dei problemi aperti (insieme dei sotto-problemi che devono ancora essere analizzati)
+\end{itemize}
+
+\subsubsection*{Strategia di Bounding}
+La principale strategia per il calcolo del lower bound è il \textbf{rilassamento lineare}. Questa tecnica consiste nel considerare il rilassamento lineare del problema $Prob^{(i)}$, cioè il problema ottenuto eliminando il vincolo di interezza.
+E quindi si si trovano i valori dei lower bound mediante la soluzione ottima $\bar{x}^{(i)}$ del rilassamento lineare, cioè: $L_i ~ = ~ c^T \bar{x}^{(i)}$.
+Infatti, il valore ottimo del problema rilassato è sempre minore o uguale al valore ottimo del problema intero $Prob^{(i)}$ ed inoltre se la soluzione ottima del problema rilassato è intera, allora essa è anche soluzione ottima del problema $Prob^{(i)}$.
+
+\subsubsection*{Strategia di Branching}
+Vediamo una semplice strategia per separare un generico problema $Prob^{(i)}$ in due sotto-problemi. 
+
+Supponiamo di aver risolto il rilassamento lineare di $Prob^{(i)}$, e sia $\bar{x}^{(i)}$ la sua soluzione ottima e $L_i ~ = ~ c^T \bar{x}^{(i)}$ il corrispondente valore ottimo, come detto sopra.
+Si possono verificare le seguenti situazioni:
+\begin{itemize}
+\item se $\bar{x}^{(i)}$ ha tutte le componenti intere allora è soluzioni di $Prob^{(i)}$, e quindi il problema va chiuso;
+\item se $L_i ~ \geq ~ \tilde{z}$ il problema non può dare origine ad un punto in cui il valore della funzione obbiettivo sia migliore di quello corrente e quindi il problema va chiuso;
+\item se nessuno dei casi precedenti si è verificato e quindi $L_i ~ \leq ~ \tilde{z}$, è necessario dividere il problema in due sotto-problemi come segue.
+Sia $\bar{x}^{(i)}_k$ una componente non intera del vettore $\bar{x}^{(i)}$, indichiamo con $\alpha_k$ la sua parte intera inferiore e con $\beta_k$ la sua parte intera superiore; separiamo il problema nei due seguenti sotto-problemi:
+\begin{equation}
+\label{eq:sottoProb1}
+Prob^{(i,1)}=
+\begin{cases}
+& min ~ c^T x \\
+& x ~ \in ~ S_i \\
+& x_k ~ \leq ~ \alpha_k \\
+\end{cases}
+\end{equation}
+
+\begin{equation}
+\label{eq:sottoProb2}
+Prob^{(i,2)}=
+\begin{cases}
+& min ~ c^T x \\
+& x ~ \in ~ S_i \\
+& x_k ~ \geq ~ \beta_k \\
+\end{cases}
+\end{equation}
+
+È facile verificare che l'unione delle regioni ammissibili di questi due problemi coincide con la regione ammissibile $S_i$.
+\end{itemize}
+
+\subsubsection*{Strategia per la scelta del sotto-problema da esaminare}
+Esistono diverse strategie di scelta, le più usate sono le seguenti:
+\begin{enumerate}
+\item Scelta del sotto-problema con il \textbf{minimo lower bound}: questa tecnica ha lo sopo di esaminare per primi quei sotto-problemi in cui è più probabile trovare una soluzione ottima;
+\item Scelta con criterio di \textbf{priorità LIFO} (Last In First Out): in questo caso i sotto-problemi da esaminare sono gestiti dalla procedura secondo lo schema a pila (stack), e quindi il sotto-problema scelto è quello che da meno tempo si trova nell'insieme dei sotto-problemi da analizzare;
+\item Scelta con criterio di \textbf{priorità FIFO} (First In First Out): in questo caso, invece, i sotto-problemi da esaminare sono gestiti secondo lo schema a coda, e quindi il sotto-problema scelto è quello che da più tempo si trova nell'insieme dei sotto-problemi da analizzare.
+\end{enumerate}
