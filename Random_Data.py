@@ -11,13 +11,13 @@ def generate_random_data(shift_types, contract_types, skills, num_nurses, num_ti
     contracts = {}
     for contract in contract_types:
         dic = {}
-        dic['min_assignments'] = random.randint(1, 4)
-        dic['max_assignments'] = random.randint(2*dic['min_assignments']+1, 12)
+        dic['min_assignments'] = num_time_periods - 1
+        dic['max_assignments'] = random.randint(6, 7) * num_time_periods
         dic['min_cons_working_days'] = random.randint(1, 3)
         dic['max_cons_working_days'] = random.randint(2*dic['min_cons_working_days']+1, 9)
         dic['min_cons_days_off'] = random.randint(1, 3)
         dic['max_cons_days_off'] = random.randint(2*dic['min_cons_days_off']+1, 9)
-        dic['max_working_week_ends'] = random.randint(2, 4)
+        dic['max_working_week_ends'] = random.randint(round(num_time_periods*0.6), round(num_time_periods*0.75))
         dic['complete_week_ends'] = bool(random.randint(0, 1))
         contracts[contract] = dic
 
@@ -40,7 +40,7 @@ def generate_random_data(shift_types, contract_types, skills, num_nurses, num_ti
         # head + regular
         else:
             dic['skills'] = skills[:2]
-        print(dic['skills'])
+        #print(dic['skills'])
         nurses[nurse_id] = dic
 
     # poichè si fa solo giornaliero la cosa dei turni consecutivi e non per shift sta roba non serve
@@ -67,7 +67,15 @@ def generate_random_data(shift_types, contract_types, skills, num_nurses, num_ti
     # minimum and optimum number of nurses
     minimum_nurses = {}
     optimum_nurses = {}
-    range_for_shift = {"morning": (10,15), "afternoon": (4,8), "night": (2,4)}
+    num_skills = len(skills)
+    num_shifts = len(shift_types)
+    range_for_shift = {"morning": (max(num_nurses//(num_skills * num_shifts * 4), 1), int(1.4 * max(num_nurses//(num_skills * num_shifts * 4), 1))),
+                       "afternoon": (max(num_nurses//(num_skills * num_shifts * 4), 1), int(1.4 * max(num_nurses//(num_skills * num_shifts * 4), 1))),
+                       "night": (max(num_nurses//(num_skills * num_shifts * 5), 1), int(1.4 * max(num_nurses//(num_skills * num_shifts * 5), 1)))
+                      }
+    print("num_nurses", num_nurses)
+    print("num_time_periods", num_time_periods)
+    print("rfs", range_for_shift)
     for day in days:
         for shift in shift_types:
             for skill in skills:
@@ -77,7 +85,8 @@ def generate_random_data(shift_types, contract_types, skills, num_nurses, num_ti
 
     # nurse requests: not to work that day in that shift
     permit_requests = []
-    num_requests = random.randint(0, 10)
+    nr = int(num_nurses * num_time_periods / 4)
+    num_requests = random.randint(nr//2, nr)
 
     all_requests = []
     for nurse_id in range(num_nurses):
@@ -93,13 +102,13 @@ def generate_random_data(shift_types, contract_types, skills, num_nurses, num_ti
     history = {}
     for nurse_id in range(num_nurses):
         dic = {}
-        dic['last_shift'] = ['morning', 'afternoon', 'night', None][random.randint(0, 3)]
+        dic['last_shift'] = ['morning', 'afternoon', 'night', None, None][random.randint(0, 4)]
         if dic['last_shift'] is None:
             dic['num_cons_shift_sametype'] = 0
             dic['num_cons_shift'] = 0
-            dic['num_cons_days_off'] = random.randint(0, 3)
+            dic['num_cons_days_off'] = random.randint(1, 3)
         else:
-            dic['num_cons_shift_sametype'] = random.randint(0, 3)
+            dic['num_cons_shift_sametype'] = random.randint(1, 3)
             dic['num_cons_shift'] = random.randint(dic['num_cons_shift_sametype'], 5)
             dic['num_cons_days_off'] = 0
         

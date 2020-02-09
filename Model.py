@@ -254,7 +254,19 @@ def runM(num_nurses, num_time_periods, history, nurses, contracts, days, minimum
         #model.Params.MIPGap = 50 * 10 ** -2
         if max_time is not None:
                 model.Params.TimeLimit = max_time
+
+        #model.Params.TimeLimit = 20
+
         model.optimize()
+
+        print("vars",model.NumVars)
+        print("varsInt",model.NumIntVars)
+        print("varsBin",model.NumBinVars)
+        print("constrsLin", model.NumConstrs)
+        print("constrQ", model.NumQConstrs)
+        print("constrsSOS", model.NumSOS)
+        print("constrsGen", model.NumGenConstrs)
+        print("model", model)
 
         end = timer()
 
