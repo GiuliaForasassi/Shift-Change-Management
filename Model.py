@@ -3,14 +3,14 @@ import datetime
 from beautifultable import BeautifulTable
 from timeit import default_timer as timer
 
-from .Constants import *
-from .Random_Data import *
-from .Preprocessing import *
+from Constants import *
+from Random_Data import *
+from Preprocessing import *
 
 def runGRD(num_nurses, num_time_periods, max_time=None):
         shift_types, contract_types, skills, lambdaS1, lambdaS2_min, lambdaS2_max, lambdaS3, lambdaS4, lambdaS5, lambdaS6, lambdaS7 = get_constants()
         history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succession, optimum_nurses, permit_requests = generate_random_data(shift_types, contract_types, skills, num_nurses, num_time_periods)
-        runM(num_nurses, num_time_periods, history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succession, optimum_nurses, permit_requests, max_time)
+        return runM(num_nurses, num_time_periods, history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succession, optimum_nurses, permit_requests, max_time)
         
 def runM(num_nurses, num_time_periods, history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succession, optimum_nurses, permit_requests, max_time=None):
         shift_types, contract_types, skills, lambdaS1, lambdaS2_min, lambdaS2_max, lambdaS3, lambdaS4, lambdaS5, lambdaS6, lambdaS7 = get_constants()
