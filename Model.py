@@ -127,15 +127,15 @@ def runM(num_nurses, num_time_periods, history, nurses, contracts, days, minimum
 
         # constraints that manage the history
         # this constraint enforce the first penalty to be 1 when history==max and worked_day[0]==1
-        model.addConstrs((penalty_S2_max[nurse_id, days[0]] >= (history[nurse_id]['num_cons_shift'] + worked_day[nurse_id, days[0]]
-                                                - contracts[nurses[nurse_id]['contract_type']]['max_cons_working_days']))
-                                                for nurse_id in nurses_ids
-                                                )
+        for nurse_id in nurses_ids:
+                if history[nurse_id]['num_cons_shift'] > 0:
+                        m = contracts[nurses[nurse_id]['contract_type']]['max_cons_working_days']
+                        h = history[nurse_id]['num_cons_shift']
+                        model.addConstr(penalty_S2_max[nurse_id, days[m-h]] >= (h - m + quicksum(worked_day[nurse_id, days[g]] for g in range(0, m-h+1))))
 
-        # this constraint enforce the penalty to be 1 when the previous penalty is 1 and the related worked_day is 1
-        model.addConstrs((penalty_S2_max[nurse_id, days[d]] >= worked_day[nurse_id, days[d]] + penalty_S2_max[nurse_id, days[d-1]] - 1)
-                                                for nurse_id in nurses_ids
-                                                for d in range(1, contracts[nurses[nurse_id]['contract_type']]['max_cons_working_days']))
+                        # this constraint enforce the penalty to be 1 when the previous penalty is 1 and the related worked_day is 1
+                        model.addConstrs((penalty_S2_max[nurse_id, days[d]] >= worked_day[nurse_id, days[d]] + penalty_S2_max[nurse_id, days[d-1]] - 1)
+                                                                for d in range(m-h+1, m))
 
         penalty_S2_max_tot = quicksum(penalty_S2_max[nurse_id, day] for nurse_id in nurses_ids for day in days)
 
