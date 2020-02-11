@@ -3,7 +3,16 @@ import names
 import copy
 # SCENARIO
 
-def generate_random_data(shift_types, contract_types, skills, num_nurses, num_time_periods):
+def generate_random_data(num_nurses, num_time_periods):
+
+    # shift types list
+    shift_types = ['Morning', 'Afternoon', 'Night']
+
+    # contract types list
+    contract_types = ['full_time', 'part_time', 'on_call']
+
+    # skills list
+    skills = ['head_nurse', 'regular_nurse', 'trainee']
 
     #random.seed(10)
 
@@ -117,4 +126,5 @@ def generate_random_data(shift_types, contract_types, skills, num_nurses, num_ti
 
         history[nurse_id] = dic
     
-    return history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succession, optimum_nurses, permit_requests
+    return history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succession, optimum_nurses, permit_requests, shift_types, contract_types, skills
+

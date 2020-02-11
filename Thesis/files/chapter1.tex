@@ -75,7 +75,7 @@ In questa sezione vengono presentate alcune tecniche di modellazione che facilit
 Le variabili binarie vengono usate quando si vuole rappresentare un evento mediante la scelta tra 2 alternative disponibili, cioè:
 \begin{equation}
 \label{eq:varBinarie}
-x=
+\delta=
 \begin{cases}
 1, & \text{se l'evento si verifica,} \\
 0, & \text{altrimenti.}
@@ -83,60 +83,150 @@ x=
 \end{equation}
 
 \subsubsection*{Vincoli logici}
-Spesso, nella formulazione di un problema di ottimizzazione è necessario imporre dei vincoli logici alle variabili decisionali, che vorremmo soddisfare, per trovare la soluzione ottima del problema preso in esame.
-Consideriamo il seguente vincolo:
-\begin{equation}
-f(x_1,...,x_n) ~ \leq ~ b
-\end{equation}
+Siano $A$ e $B$ due eventi e $\delta_A$ e $\delta_B$ le corrispettive variabili di decisione. Esprimiamo condizioni logiche sugli eventi mediante vincoli sulle variabili di decisione corrispondenti.
+\begin{enumerate}
+\item \textit{And}\\
+Supponiamo di avere la seguente condizione logica: $A~\wedge~B$.
+Dalla tabella di verità (Tabella \ref{tab:tableAND}) è evidente che questa condizione è soddisfatta quando entrambi gli eventi si sono verificati, e quindi quando entrambe le variabili di decisione relative sono pari ad 1.
 
-Introduciamo la variabile binaria y tale che:
-\begin{equation}
-\label{eq:varVincoloSoddisfatto}
-y=
-\begin{cases}
-0, & \text{se il vincolo è soddisfatto,} \\
-1, & \text{altrimenti.}
-\end{cases}
-\end{equation}
+\begin{table}[h!]
+  \begin{center}
+    \begin{tabular}{l|c|c} % <-- Alignments: 1st column left, 2nd middle and 3rd right, with vertical lines in between
+      %\textbf{$\delta_A$} & \textbf{$\delta_B$} & \textbf{$A~and~B$}\\
+      $\delta_A$ & $\delta_B$ & $A~\wedge~B$ \\
+      \hline
+      0 & 0 & F\\
+      0 & 1 & F\\
+      1 & 0 & F\\
+      1 & 1 & T\\
+    \end{tabular}
+    \caption{Tabella di verità: and}
+    \label{tab:tableAND}
+  \end{center}
+\end{table}
 
-Quindi si può riscrivere i vincolo nel seguente modo:
-\begin{equation}
-f(x_1,...,x_n) - By ~ \leq ~ b
-\end{equation}
-dove B è una costante.
+Questo equivale ad imporre il seguente vincolo: $\delta_A + \delta_B$.
 
-\subsubsection*{Vincoli logici alternativi}
-Consideriamo la situazione in cui si hanno vincoli logici alternativi, in cui almeno uno di questi, non necessariamente entrambi, deve essere soddisfatto:
-\begin{equation}
-\begin{split}
-& f_1{(x_1,...,x_n)} ~ \leq ~ b_1 \\
-& f_2{(x_1,...,x_n)} ~ \leq ~ b_2 \\
-\end{split}
-\end{equation}
+\item \textit{Or}\\
+Supponiamo di avere la condizione logica: $A~\vee~B$.
+In questo caso si può vedere che tale condizione è soddisfatta quando almeno uno dei due eventi si è verificato, e quindi quando almeno una delle due variabili è pari ad 1 (Tabella \ref{tab:tableOR}).\\\\
 
-Questa restrizione può essere modellata combinando la tecnica appena introdotta con un vincolo a scelta multipla come segue:
-\begin{equation}
-\begin{split}
-& f_1{(x_1,...,x_n)} - B_1y_1 ~ \leq ~ b_1 \\
-& f_2{(x_1,...,x_n)} - B_2y_2 ~ \leq ~ b_2 \\
-& y_1 + y_2 ~ \leq ~ 1 \\
-& y_1, y_2 ~ binarie \\
-\end{split}
-\end{equation}
+\begin{table}[h!]
+  \begin{center}
+    \begin{tabular}{l|c|c} % <-- Alignments: 1st column left, 2nd middle and 3rd right, with vertical lines in between
+      %\textbf{$\delta_A$} & \textbf{$\delta_B$} & \textbf{$A~and~B$}\\
+      $\delta_A$ & $\delta_B$ & $A~\vee~B$ \\
+      \hline
+      0 & 0 & F\\
+      0 & 1 & T\\
+      1 & 0 & T\\
+      1 & 1 & T\\
+    \end{tabular}
+    \caption{Tabella di verità: or}
+    \label{tab:tableOR}
+  \end{center}
+\end{table}
 
-\subsubsection*{Vincoli logici condizionali}
-Questa classe di vincoli è caratterizzata dal fatto che tutti i vincoli sono dipendenti tra loro, cioè, in altre parole, dato un vincolo A esso implica un altro vincolo B.
-Matematicamente possiamo scrivere ciò:
-\begin{equation}
-f_1(x_1,...,x_n) ~ > ~ b_1 ~ \Longrightarrow ~ f_2(x_1,...,x_n) ~ \leq ~ b_2
-\end{equation}
+Questo equivale ad imporre il seguente vincolo: $\delta_A + \delta_B \geq 1$.
+\\
+\item \textit{Or esclusivo}\\
+Sia la seguente condizione logica: $A~\oplus~B$.
+Questa situazione è molto simile a quella appena vista ma, contrariamente a prima, le variabili decisionali non possono essere entrambe pari ad 1 (Tabella \ref{tab:tableORe}).
 
-Poiché questa implicazione non è soddisfatta quando entrambi valgono, il vincolo condizionale è logicamente equivalente ai vincoli alternativi, e quindi di può riscrivere nel seguente modo:
-\begin{equation}
-f_1(x_1,...,x_n) ~ \leq ~ b_1 ~ and/or ~ f_2(x_1,...,x_n) ~ \leq ~ b_2
-\end{equation}
-dove almeno uno deve essere soddisfatto.
+\begin{table}[h!]
+  \begin{center}
+    \begin{tabular}{l|c|c} % <-- Alignments: 1st column left, 2nd middle and 3rd right, with vertical lines in between
+      %\textbf{$\delta_A$} & \textbf{$\delta_B$} & \textbf{$A~and~B$}\\
+      $\delta_A$ & $\delta_B$ & $A~\oplus~B$ \\
+      \hline
+      0 & 0 & F\\
+      0 & 1 & T\\
+      1 & 0 & T\\
+      1 & 1 & F\\
+    \end{tabular}
+    \caption{Tabella di verità: or esclusivo}
+    \label{tab:tableORe}
+  \end{center}
+\end{table}
 
+Questo equivale ad imporre il seguente vincolo: $\delta_A + \delta_B = 1$.
+
+\item \textit{Implicazione}\\
+Valutiamo le seguenti condizioni logiche, facendo riferimento alla tabella di verità (Tabella \ref{tab:tableImp1}): 
+\begin{itemize}
+\item $A\Longrightarrow B$: condizione falsa nel solo caso in cui A sia vera e B sia falsa.
+Questo equivale ad imporre il seguente vincolo: $\delta_A \leq \delta_B$.
+
+\item $B \Longrightarrow A$: condizione falsa nel solo caso in cui B sia vera e A sia falsa.
+Questo equivale ad imporre il seguente vincolo: $\delta_A \geq \delta_B$.
+\end{itemize}
+
+\begin{table}[h!]
+  \begin{center}
+    \begin{tabular}{l|c|c|c} % <-- Alignments: 1st column left, 2nd middle and 3rd right, with vertical lines in between
+      %\textbf{$\delta_A$} & \textbf{$\delta_B$} & \textbf{$A~and~B$}\\
+      $\delta_A$ & $\delta_B$ & $A~\Longrightarrow~B$ & $B~\Longrightarrow~A$ \\
+      \hline
+      0 & 0 & T & T\\
+      0 & 1 & T & F\\
+      1 & 0 & F & T\\
+      1 & 1 & T & T\\
+    \end{tabular}
+    \caption{Tabella di verità: implicazione}
+    \label{tab:tableImp1}
+  \end{center}
+\end{table}
+
+%\begin{table}[h!]
+%  \begin{center}
+%    \label{tab:tableImp2}
+%    \begin{tabular}{l|c|c} % <-- Alignments: 1st column left, 2nd middle and 3rd right, with vertical lines in between
+%      %\textbf{$\delta_A$} & \textbf{$\delta_B$} & \textbf{$A~and~B$}\\
+%      $\delta_A$ & $\delta_B$ & $B~\Longrightarrow~A$ \\
+%      \hline
+%      0 & 0 & T\\
+%      0 & 1 & F\\
+%      1 & 0 & T\\
+%      1 & 1 & T\\
+%    \end{tabular}
+%    \caption{Tabella di verità: implicazione}
+%  \end{center}
+%\end{table}
+
+\item \textit{Doppia Implicazione}\\
+Valutiamo la seguente condizione logica: $B \Longleftrightarrow A$.
+Tale condizione è soddisfatta quando o entrambi gli eventi si verificano o se non si verificano affatto, come è possibile vedere nella tabella di verità relativa (Tabella \ref{tab:tableDoppiaImp}).
+
+\begin{table}[h!]
+  \begin{center}
+    \begin{tabular}{l|c|c} % <-- Alignments: 1st column left, 2nd middle and 3rd right, with vertical lines in between
+      %\textbf{$\delta_A$} & \textbf{$\delta_B$} & \textbf{$A~and~B$}\\
+      $\delta_A$ & $\delta_B$ & $B~\Longleftrightarrow~A$ \\
+      \hline
+      0 & 0 & T\\
+      0 & 1 & F\\
+      1 & 0 & F\\
+      1 & 1 & T\\
+    \end{tabular}
+    \caption{Tabella di verità: doppio implicazione}
+    \label{tab:tableDoppiaImp}
+  \end{center}
+\end{table}
+
+Questo equivale ad imporre il seguente vincolo: $\delta_A = \delta_B$.
+\end{enumerate}
+
+%
+%\begin{tabular}{|l|c|c|r|}
+%\toprule
+%& $X_A$ & $X_B$ & $A and B$ & $X_A + X_B$\\
+%\midrule
+%0 & 0 & F & 0 \\
+%0 & 1 & F & 1 \\
+%1 & 0 & F & 1 \\
+%1 & 1 & T & 2 \\
+%\bottomrule
+%\end{tabular}
 
 \section{Algoritmi di ILP}
 Per la soluzione di problemi ILP non esistono metodi universalmente efficienti. Molto spesso è necessario utilizzare algoritmi \textit{ad hoc} che siano in grado di sfruttare la particolare struttura del problema.

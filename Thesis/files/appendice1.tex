@@ -30,30 +30,30 @@ In questa sezione vengono spiegate le funzionalità principali di Gurobi per il 
 \subsection{Variabili}
 Le variabili di decisione rappresentano il risultato dell'ottimizzazione.
 In una soluzione ammissibile, i valori calcolati per le variabili di decisione soddisfano tutti i vincoli del modello. Alcuni di questi vincoli sono associati a singole variabili, mentre altri rappresentano relazioni tra esse.
-Ci sono varie tipologie di variabili disponibili tra cui: continue, intere o intere binarie, semi-continue e infine semi-intere.
+Ci sono varie tipologie di variabili disponibili tra cui: continue, intere o intere binarie.
 
-\subsubsection*{Variabili continue}
-Le variabili continue possono assumere qualsiasi valore tra il loro limite inferiore e quello superiore. Nella programmazione matematica, la convenzione è che le variabili sono non negative se non diversamente indicato, quindi se non si forniscono esplicitamente i limiti per una variabile, si dovrebbe presumere che il limite inferiore sia 0 e quello superiore sia $\infty$. Una variabile con limiti superiori e inferiori uguali ad $\infty$ vine detta variabile libera.
-Inoltre le variabili possono violare i loro limite di tolleranza, che in questo caso è \texttt{FeasibilityTol}. È possibile ridurre questo valore, ma a causa di errori numerici potrebbe non essere possibile ottenere la precisione desiderata.
-
-\subsubsection*{Variabili intere}
-Le variabili intere, in generale, sono maggiormente vincolate rispetto a quelle continue, infatti possono assumere solo valori interi. 
-
-????
-
-In particolare i limiti inferiore e superiore di una ....
-Una soluzione non è considerata ammissibile a meno che tutte le variabili 
-
-\subsubsection*{Variabili binarie}
-Le variabili binarie sono particolari variabili intere che possono assumere solo valori pari a 0 o ad 1.
-Ancora una volta, a causa dei limiti dell'aritmetica a precisione finita, le variabili binarie assumeranno spesso valori che non sono esattamente....
-L'entità della violazione di integrità consentita è controllata dal parametro \texttt{IntFeasTol}.
-
-\subsubsection*{Variabili semi-continue e semi-intere}
-Le variabili semi-continue possono assumere valori pari a 0 o ad un valore compreso tra i limiti inferiore e superiore specificati.
-Una variabile semi-intera può assumere anche un valore intero.
-
-Entrambi questi tipi di variabili possono violare queste restrizioni, in questo caso la tolleranza pertinente è \texttt{IntFeasTol}.
+%\subsubsection*{Variabili continue}
+%Le variabili continue possono assumere qualsiasi valore tra il loro limite inferiore e quello superiore. Nella programmazione matematica, la convenzione è che le variabili sono non negative se non diversamente indicato, quindi se non si forniscono esplicitamente i limiti per una variabile, si dovrebbe presumere che il limite inferiore sia 0 e quello superiore sia $\infty$. Una variabile con limiti superiori e inferiori uguali ad $\infty$ vine detta variabile libera.
+%Inoltre le variabili possono violare i loro limite di tolleranza, che in questo caso è \texttt{FeasibilityTol}. È possibile ridurre questo valore, ma a causa di errori numerici potrebbe non essere possibile ottenere la precisione desiderata.
+%
+%\subsubsection*{Variabili intere}
+%Le variabili intere, in generale, sono maggiormente vincolate rispetto a quelle continue, infatti possono assumere solo valori interi. 
+%
+%????
+%
+%In particolare i limiti inferiore e superiore di una ....
+%Una soluzione non è considerata ammissibile a meno che tutte le variabili 
+%
+%\subsubsection*{Variabili binarie}
+%Le variabili binarie sono particolari variabili intere che possono assumere solo valori pari a 0 o ad 1.
+%Ancora una volta, a causa dei limiti dell'aritmetica a precisione finita, le variabili binarie assumeranno spesso valori che non sono esattamente....
+%L'entità della violazione di integrità consentita è controllata dal parametro \texttt{IntFeasTol}.
+%
+%\subsubsection*{Variabili semi-continue e semi-intere}
+%Le variabili semi-continue possono assumere valori pari a 0 o ad un valore compreso tra i limiti inferiore e superiore specificati.
+%Una variabile semi-intera può assumere anche un valore intero.
+%
+%Entrambi questi tipi di variabili possono violare queste restrizioni, in questo caso la tolleranza pertinente è \texttt{IntFeasTol}.
 
 \subsubsection*{Metodo per aggiungere variabili al modello}
 Per aggiungere una nuova variabile al modello creato è necessario usare il metodo \texttt{addVar()}, il quale se ritorna un valore diverso da 0 indica che si è verificato un problema durante l'aggiunta della variabile.
@@ -112,18 +112,19 @@ Un esempio è il seguente:
 $3x^2 + 4y^2 + 5z ~ \leq ~ 10$.
 
 I vincoli quadratici sono spesso molto più difficili da soddisfare rispetto a quelli lineari. ma Gurobi può gestire sia quelli convessi che non.
-Tuttavia gli algoritmi predefiniti di Gurobi accettano solo alcune \textbf{forme di vincoli quadratici}, noti per avere regioni convesse realizzabili, come per esempio quelle elencate qui di seguito:
-\begin{itemize}
-\item $x^T Q x + q^T x ~ \leq ~ b$;
-\item $x^T x ~ \leq ~ y^2$, dove x è un vettore di variabili e y una variabile non negativa;
-\item $x^T x ~ \leq ~ y z$, dove x è un vettore di variabili, e y e z sono variabili non negative.
-\end{itemize}
-Quindi verrà accettato un vincolo quadratico solo se si è in grado di trasformarlo in una di queste forme.
+Tuttavia gli algoritmi predefiniti di Gurobi accettano solo alcune \textbf{forme di vincoli quadratici}, noti per avere regioni convesse realizzabili.
+%come per esempio quelle elencate qui di seguito:
+%\begin{itemize}
+%\item $x^T Q x + q^T x ~ \leq ~ b$;
+%\item $x^T x ~ \leq ~ y^2$, dove x è un vettore di variabili e y una variabile non negativa;
+%\item $x^T x ~ \leq ~ y z$, dove x è un vettore di variabili, e y e z sono variabili non negative.
+%\end{itemize}
+%Quindi verrà accettato un vincolo quadratico solo se si è in grado di trasformarlo in una di queste forme.
 
 Si noti che altri risolutori quadratici non convessi spesso trovano solo soluzioni localmente ottime, invece gli algoritmi su cui si basa Gurobi esplorano l'intero spazio di ricerca, quindi forniscono un limite inferiore valido a livello globale e quindi, dato un tempo sufficiente, potranno trovare una soluzione ottima globale.
 
 \subsubsection*{Vincoli generali}
-I vincoli sopra descritti sono generalmente gestiti direttamente dagli algoritmi di ottimizzazione sottostanti. Gurobi include una serie aggiuntiva di vincoli chiamati vincoli generali progettati per una questione di praticità e funzionalità, in quanto permettono di definire facilmente determinate relazioni variabili.
+I vincoli sopra descritti sono generalmente gestiti direttamente dagli algoritmi di ottimizzazione sottostanti. Gurobi include una serie aggiuntiva di vincoli, chiamati vincoli generali, progettati per una questione di praticità e funzionalità, in quanto permettono di definire facilmente determinate relazioni variabili.
 
 Vi sono due tipologie di vincoli generali:
 \begin{itemize}
@@ -164,18 +165,18 @@ In generale questo ottimizzatore restituisce un'unica soluzione ottimale per mod
 
 Gli algoritmi di Gurobi lavorano per risolvere un modello fino a quando non trovano una soluzione ottimale entro le tolleranze specificate.
 Per modelli discreti, nonostante sia possibile chiedere al risolutore di trovare una soluzione con il miglior valore obbiettivo, è molto comune fermarsi quando l'obbiettivo della soluzione rientra in un intervallo specificato del valore ottimale.
-Questo Gap dell'ottimalità è controllato dal parametro \texttt{MIPGap} il cui valore predefinito è 0,01%.
+Questo Gap dell'ottimalità è controllato dal parametro \texttt{MIPGap} il cui valore predefinito è 0,01\%.
 
 Le funzioni obbiettivo possono essere: lineari, quadratiche, lineare a tratti e multi-obbiettivo lineari.
 
 \subsubsection*{Metodi principali della funzione obbiettivo}
-Per importare l'obbiettivo del modello uguale ad un'espressione lineare o quadratica viene usato il metodo \texttt{setObjective()}, che ha come parametri:
+Per impostare l'obbiettivo del modello uguale ad un'espressione lineare o quadratica viene usato il metodo \texttt{setObjective()}, che ha come parametri:
 \begin{itemize}
 \item \texttt{linExpr} o \texttt{quadExpr}: espressione lineare o quadratica:
 \item \texttt{sense}: si può specificare se si desidera minimizzarla o massimizzarla.
 \end{itemize}
 
 Per esempio sia $f(x)$ la funzione obbiettivo, supponiamo di volerla minimizzare:\\
-\texttt{model.setObjective($f(x)$, GRB.MINIMIZE)}
+\texttt{model.setObjective($f(x)$, GRB.MINIMIZE)}\\
 Una volta settata la funzione obbittivo per minimizzarla è necessario richiamare il metodo \texttt{optimize()} sul modello in questione:\\
 \texttt{model.optimize()}

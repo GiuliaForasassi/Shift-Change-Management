@@ -6,14 +6,18 @@ from timeit import default_timer as timer
 from Constants import *
 from Random_Data import *
 from Preprocessing import *
+from Read_Data import read_data
+
+def runRealData(num_nurses, num_time_periods, max_time=None):
+        history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succession, optimum_nurses, permit_requests, shift_types, contract_types, skills = read_data(num_nurses, num_time_periods)
+        return runM(history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succession, optimum_nurses, permit_requests, shift_types, contract_types, skills, max_time)
 
 def runGRD(num_nurses, num_time_periods, max_time=None):
-        shift_types, contract_types, skills, lambdaS1, lambdaS2_min, lambdaS2_max, lambdaS3, lambdaS4, lambdaS5, lambdaS6, lambdaS7 = get_constants()
-        history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succession, optimum_nurses, permit_requests = generate_random_data(shift_types, contract_types, skills, num_nurses, num_time_periods)
-        return runM(num_nurses, num_time_periods, history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succession, optimum_nurses, permit_requests, max_time)
+        history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succession, optimum_nurses, permit_requests, shift_types, contract_types, skills = generate_random_data(num_nurses, num_time_periods)
+        return runM(history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succession, optimum_nurses, permit_requests, shift_types, contract_types, skills, max_time)
         
-def runM(num_nurses, num_time_periods, history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succession, optimum_nurses, permit_requests, max_time=None):
-        shift_types, contract_types, skills, lambdaS1, lambdaS2_min, lambdaS2_max, lambdaS3, lambdaS4, lambdaS5, lambdaS6, lambdaS7 = get_constants()
+def runM(history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succession, optimum_nurses, permit_requests, shift_types, contract_types, skills, max_time=None):
+        lambdaS1, lambdaS2_min, lambdaS2_max, lambdaS3, lambdaS4, lambdaS5, lambdaS6, lambdaS7 = get_constants()
         start = timer()
         history = preprocess_history(history, contracts, nurses)
 
@@ -27,13 +31,14 @@ def runM(num_nurses, num_time_periods, history, nurses, contracts, days, minimum
 
         # HARD CONSTRAINTS 
 
+        '''H1'''
         # H1: SINGLE ASSIGNMENT PER DAY
         # constraint that checks if the number of shifts is less equal to 1
         model.addConstrs((quicksum(assignment[nurse_id, shift, day] for shift in shift_types) <= 1
                         for nurse_id in nurses_ids
                         for day in days), name='H1')
 
-
+        '''H2'''
         # H2:UNDERSTAFFING
         # constraint that checks if the number of nurses is at least equal to the minimum one
         model.addConstrs((quicksum(assignment[nurse_id, shift, day] for nurse_id in nurses_ids if skill in nurses[nurse_id]['skills']) >= minimum_nurses[day, shift, skill]
@@ -41,7 +46,7 @@ def runM(num_nurses, num_time_periods, history, nurses, contracts, days, minimum
                         for day in days
                         for skill in skills), name='H2')
 
-
+        '''H3'''
         # H3: SHIFT TYPE SUCCESSIONS
         # constraint that checks if the assignment of a shift type in 2 consecutive days is legal
         model.addConstrs(((assignment[nurse_id, shiftA, days[d]] + assignment[nurse_id, shiftB, days[d+1]] <= 1)
@@ -53,6 +58,7 @@ def runM(num_nurses, num_time_periods, history, nurses, contracts, days, minimum
 
         # SOFT CONSTRAINTS 
 
+        '''S1'''
         # S1: INSUFFICIENT STAFFING FOR OPTIMAL COVERAGE
         penalty_S1 = model.addVars(shift_types, skills, days, vtype=GRB.INTEGER, name='S1')
 
@@ -71,6 +77,7 @@ def runM(num_nurses, num_time_periods, history, nurses, contracts, days, minimum
         # binary variable that tell me if a nurse should have worked that day
         required_worked_day = model.addVars(nurses_ids, days, vtype=GRB.BINARY, name='Required_Worked_Day')
 
+        '''S2 MIN'''
         # S2 MIN
         # contraint --> or
         model.addConstrs(worked_day[nurse_id, day] >= assignment[nurse_id, shift, day]
@@ -79,14 +86,14 @@ def runM(num_nurses, num_time_periods, history, nurses, contracts, days, minimum
                         for day in days)
 
         # in case I have all 0 I want worked_day = 0
-        model.addConstrs(worked_day[nurse_id, days[d]] <= quicksum(assignment[nurse_id, shift, days[d]] for shift in shift_types) + assignment[nurse_id, 'night', days[d-1]]
+        model.addConstrs(worked_day[nurse_id, days[d]] <= quicksum(assignment[nurse_id, shift, days[d]] for shift in shift_types)# + assignment[nurse_id, 'Night', days[d-1]]
                         for nurse_id in nurses_ids
                         for d in range(1, len(days)))
 
-        # contraint about nights: a night is equal to two consecutive days
-        model.addConstrs(worked_day[nurse_id, days[d+1]] >= assignment[nurse_id, 'night', days[d]]
-                        for nurse_id in nurses_ids
-                        for d in range(len(days) - 1))
+        # # contraint about nights: a night is equal to two consecutive days
+        # model.addConstrs(worked_day[nurse_id, days[d+1]] >= assignment[nurse_id, 'Night', days[d]]
+        #                 for nurse_id in nurses_ids
+        #                 for d in range(len(days) - 1))
 
         # contraints that link the two binary variables: worked_day and required_worked_day
         model.addConstrs(required_worked_day[nurse_id, day] >= worked_day[nurse_id, day]
@@ -115,11 +122,11 @@ def runM(num_nurses, num_time_periods, history, nurses, contracts, days, minimum
                                 for nurse_id in nurses_ids
                                 for day in days)
 
+        '''S2 MAX'''
         # S2 MAX 
         # constraint that controls the maximum number of consecutive working days --> S2 MAX
         penalty_S2_max = model.addVars(nurses_ids, days, vtype=GRB.BINARY)
         # constraints that manage the new assignments (not the history)
-        model.addConstrs(penalty_S2_max[nurse_id, day] >= 0 for nurse_id in nurses_ids for day in days)
         model.addConstrs((penalty_S2_max[nurse_id, days[d]] >= (quicksum(worked_day[nurse_id, days[i]] for i in range(d - contracts[nurses[nurse_id]['contract_type']]['max_cons_working_days'], d+1))
                                                 - contracts[nurses[nurse_id]['contract_type']]['max_cons_working_days']))
                                                 for nurse_id in nurses_ids
@@ -142,6 +149,7 @@ def runM(num_nurses, num_time_periods, history, nurses, contracts, days, minimum
         # S3: CONSECUTIVE DAYS OFF
         required_day_off = model.addVars(nurses_ids, days, vtype=GRB.BINARY, name='Required_Day_Off')
 
+        '''S3 MIN'''
         # S3 MIN
         # constraints that link the two binary variables: worked_day and required_day_off
         model.addConstrs(required_day_off[nurse_id, day] >= (1 - worked_day[nurse_id, day])
@@ -169,10 +177,10 @@ def runM(num_nurses, num_time_periods, history, nurses, contracts, days, minimum
                                 for nurse_id in nurses_ids
                                 for day in days)
 
+        '''S3 MAX'''
         # S3 MAX
         # constraint that controls the maximum number of consecutive days off --> S3 MAX
         penalty_S3_max = model.addVars(nurses_ids, days, vtype=GRB.BINARY)
-        model.addConstrs(penalty_S3_max[nurse_id, day] >= 0 for nurse_id in nurses_ids for day in days)
         model.addConstrs((penalty_S3_max[nurse_id, days[d]] >= (quicksum(1 - worked_day[nurse_id, days[i]] for i in range(d - contracts[nurses[nurse_id]['contract_type']]['max_cons_days_off'], d+1))
                                                 - contracts[nurses[nurse_id]['contract_type']]['max_cons_days_off']))
                                                 for nurse_id in nurses_ids
@@ -180,22 +188,23 @@ def runM(num_nurses, num_time_periods, history, nurses, contracts, days, minimum
 
         # constraints that manage the history
         # this constraint enforce the first penalty to be 1 when history==max and worked_day[0]==0
-        model.addConstrs((penalty_S3_max[nurse_id, days[0]] >= (history[nurse_id]['num_cons_days_off'] + 1 - worked_day[nurse_id, days[0]]
-                                                - contracts[nurses[nurse_id]['contract_type']]['max_cons_days_off']))
-                                                for nurse_id in nurses_ids
-                                                )
+        for nurse_id in nurses_ids:
+                if history[nurse_id]['num_cons_days_off'] > 0:
+                        m = contracts[nurses[nurse_id]['contract_type']]['max_cons_days_off']
+                        h = history[nurse_id]['num_cons_days_off']
+                        model.addConstr(penalty_S3_max[nurse_id, days[m-h]] >= (h - m + quicksum(1 - worked_day[nurse_id, days[g]] for g in range(0, m-h+1))))
 
-        # this constraint enforce the penalty to be 1 when the previous penalty is 1 and the related worked_day is 0
-        model.addConstrs((penalty_S3_max[nurse_id, days[d]] >= penalty_S3_max[nurse_id, days[d-1]] - worked_day[nurse_id, days[d]])
-                                                for nurse_id in nurses_ids
-                                                for d in range(1, contracts[nurses[nurse_id]['contract_type']]['max_cons_days_off']))
-
+                        # this constraint enforce the penalty to be 1 when the previous penalty is 1 and the related worked_day is 1
+                        model.addConstrs((penalty_S3_max[nurse_id, days[d]] >= (1 - worked_day[nurse_id, days[d]]) + penalty_S3_max[nurse_id, days[d-1]] - 1)
+                                                                for d in range(m-h+1, m))
+        
         penalty_S3_max_tot = quicksum(penalty_S3_max[nurse_id, day] for nurse_id in nurses_ids for day in days)
 
+        '''S4'''
         # S4: PREFERENCES 
         penalty_S4 = quicksum(assignment[nurse_id, shift, day] for (nurse_id, day, shift) in permit_requests)
 
-
+        '''S5'''
         # S5: COMPLETE WEEK-END
         saturdays = [d for d in range(len(days)) if "Saturday" in days[d]]
         nurses_complete_weekends = [n for n in nurses_ids if contracts[nurses[n]['contract_type']]['complete_week_ends']]
@@ -207,32 +216,30 @@ def runM(num_nurses, num_time_periods, history, nurses, contracts, days, minimum
 
         penalty_S5 = quicksum(worked_only_saturday[nurse_id, d] + worked_only_sunday[nurse_id, d] for nurse_id in nurses_complete_weekends for d in saturdays)
 
-
+        '''S6'''
         # S6: TOTAL ASSIGNMENTS
         penalty_S6 = model.addVars(nurses_ids, vtype=GRB.INTEGER, name='S6_min')
 
         model.addConstrs(penalty_S6[nurse_id] >= 0 for nurse_id in nurses_ids)
         model.addConstrs(penalty_S6[nurse_id] >= (contracts[nurses[nurse_id]['contract_type']]['min_assignments'] 
-                        - quicksum(assignment[nurse_id, shift, day] for shift in shift_types for day in days))
+                        - quicksum(worked_day[nurse_id, day] for day in days))
                         for nurse_id in nurses_ids)
                         
-        model.addConstrs(penalty_S6[nurse_id] >= (quicksum(assignment[nurse_id, shift, day] for shift in shift_types for day in days) 
+        model.addConstrs(penalty_S6[nurse_id] >= (quicksum(worked_day[nurse_id, day] for day in days) 
                         - contracts[nurses[nurse_id]['contract_type']]['max_assignments'])
                         for nurse_id in nurses_ids)
 
         penalty_S6_tot = quicksum(penalty_S6[nurse_id] for nurse_id in nurses_ids)
 
-                
+        '''S7'''
         #S7: TOTAL WORKING WEEK-ENDS
         # binary variable, for each nurse and each weekend, which is one if the nurse worked both Saturday and Sunday
         worked_weekend = model.addVars(nurses_ids, saturdays, vtype=GRB.BINARY, name='Worked_Weekend')
-        model.addConstrs(worked_weekend[nurse_id, d] >= assignment[nurse_id, shift, days[d]] 
-                        for shift in shift_types
+        model.addConstrs(worked_weekend[nurse_id, d] >= worked_day[nurse_id, days[d]] 
                         for nurse_id in nurses_ids
                         for d in saturdays)
 
-        model.addConstrs(worked_weekend[nurse_id, d] >= assignment[nurse_id, shift, days[d+1]] 
-                        for shift in shift_types
+        model.addConstrs(worked_weekend[nurse_id, d] >= worked_day[nurse_id, days[d+1]] 
                         for nurse_id in nurses_ids
                         for d in saturdays)
 
@@ -246,7 +253,7 @@ def runM(num_nurses, num_time_periods, history, nurses, contracts, days, minimum
 
         penalty_S7_tot = quicksum(penalty_S7[nurse_id] for nurse_id in nurses_ids)
 
-
+        '''OBJECTIVE FUNCTION'''
         # OBJECTIVE FUNCTION
         #obj = 0 + lambdaS1 * penalty_S1 + lambdaS2_min * penalty_S2_min + lambdaS3 * penalty_S3_min + lambdaS4 * penalty_S4 + lambdaS5 * penalty_S5 + lambdaS6 * penalty_S6_min + lambdaS6 * penalty_S6_max + lambdaS7 * penalty_S7
         obj = lambdaS1 * penalty_S1_tot + lambdaS2_min * penalty_S2_min_tot + lambdaS2_max * penalty_S2_max_tot + lambdaS3 * (penalty_S3_min + penalty_S3_max_tot) + lambdaS4 * penalty_S4 + lambdaS5 * penalty_S5 + lambdaS6 * penalty_S6_tot + lambdaS7 * penalty_S7_tot
@@ -254,8 +261,6 @@ def runM(num_nurses, num_time_periods, history, nurses, contracts, days, minimum
         #model.Params.MIPGap = 50 * 10 ** -2
         if max_time is not None:
                 model.Params.TimeLimit = max_time
-
-        #model.Params.TimeLimit = 20
 
         model.optimize()
 
@@ -275,7 +280,7 @@ def runM(num_nurses, num_time_periods, history, nurses, contracts, days, minimum
         first_day = datetime.datetime(2020, 1, 6)
 
         datetimes = [first_day + datetime.timedelta(days=d) for d in range(len(days))]
-        datetimes_str = [date.strftime("%A\n%d %b %y") for date in datetimes]
+        datetimes_str = [date.strftime("%a\n%d\n%b\n%y") for date in datetimes]
 
         # OUTPUT DISPLAY
         table = BeautifulTable()

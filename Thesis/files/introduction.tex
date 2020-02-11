@@ -1,3 +1,17 @@
 \chapter{Introduzione}\label{ch:introduzione}
-\ldots
-\cite{gruntzig1978transluminal}
+Il progetto alla base di questa tesi triennale si basa su una competizione avvenuta tra il 2014 e il 2015, chiamata  "Second International Nurse Rostering Competition", con lo scopo di incoraggiare la ricerca sui metodi automatizzati di selezione degli infermieri per risolvere un problema di assegnamento del personale infermieristico. 
+
+Il lavoro di tale tesi è stato costruire un programma che gestisse il cambio dei turni del personale infermieristico all'interno di un ospedale.
+Il problema preso in esame è da sempre una questione di fondamentale importanza nell'organizzazione del lavoro all'interno della sanità, e anche in altre realtà lavorative. Quindi, lo scopo di questo progetto è stato creare un modello di ottimizzazione per la pianificazione dei turni lavorativi ospedalieri in modo da soddisfare il numero maggiore di vincoli possibili per trovare una soluzione ammissibile. \\
+
+Si è modellato tale problema come un problema di programmazione lineare intera, usando, quindi, solo variabili intere, per la maggior parte binarie. 
+Tale programma è stato implementato in Python, usando un ottimizzatore commerciale chiamato Gurobi. Inoltre, una volta creato il modello, sono stati fatti degli esperimenti basandosi su alcuni dati reali presi direttamente dal paper della competizione, con lo scopo di valutare l'efficienza del modello creato. \\
+
+La tesi è articolata in 6 capitoli: nel secondo capitolo vengono forniti i contenuti teorici che stanno alla base della programmazione lineare intera. Nel terzo capitolo è stato introdotto il problema in questione spiegando, dapprima, le varie tipologie di dati che il programma deve ricevere in input, e successivamente, sono stati analizzati nel dettaglio tutti i vincoli imposti dando anche dettagli implementativi.
+Il quarto capitolo si concentra sugli esperimenti che sono stati fatti, usando dati reali del problema, con lo scopo di valutare l'efficienza del modello creato.
+Successivamente, nel quinto capitolo viene mostrata la parte di interfaccia che si è riusciti a fare, per l'utilizzo del programma, mediante il framework Django.
+Infine, nell'ultimo capitolo, vengono tratte le conclusioni di questo lavoro di tesi di laurea.
+
+
+
+ 
