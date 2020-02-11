@@ -14,16 +14,16 @@ for t in time_periods:
     relative_gaps = []
     for n in num_nurses:
         elapsed_time, absolute_gap, relative_gap = runRealData(n, t, max_time)
-        relative_gaps.append(relative_gap)
+        relative_gaps.append(relative_gap*100)
 
     plt.plot(num_nurses, relative_gaps, label=str(t)+"weeks")
 
 plt.legend()
 plt.xlabel('Numero di infermieri')
-plt.ylabel('Gap percentuale')
+plt.ylabel('Gap percentuale (%)')
 plt.title("Tempo massimo: {}s".format(max_time))
 # per togliere il float in valori interi delle x
-plt.xticks(time_periods)
+plt.xticks(num_nurses)
 # per fare exp su server
 plt.savefig("Gap_60sec.png")
 plt.clf() # per non fare i grafici sempre sulla stessa figura
@@ -37,16 +37,16 @@ for t in time_periods:
     relative_gaps = []
     for n in num_nurses:
         elapsed_time, absolute_gap, relative_gap = runRealData(n, t, max_time)
-        relative_gaps.append(relative_gap)
+        relative_gaps.append(relative_gap*100)
 
     plt.plot(num_nurses, relative_gaps, label=str(t)+"weeks")
 
 plt.legend()
 plt.xlabel('Numero di infermieri')
-plt.ylabel('Gap percentuale')
+plt.ylabel('Gap percentuale (%)')
 plt.title("Tempo massimo: {}s".format(max_time))
 # per togliere il float in valori interi delle x
-plt.xticks(time_periods)
+plt.xticks(num_nurses)
 # per fare exp su server
 plt.savefig("Gap_30min.png")
 plt.clf() # per non fare i grafici sempre sulla stessa figura
@@ -67,7 +67,8 @@ for t in time_periods:
 plt.legend()
 plt.xlabel('Numero di infermieri')
 plt.ylabel('Tempo di calcolo (s)')
-plt.title("Tempo di calcolo")
+plt.title("Tempo di esecuzione")
+plt.xticks(num_nurses)
 # per fare exp su server
 plt.savefig("Time.png")
 plt.clf() # per non fare i grafici sempre sulla stessa figura 
