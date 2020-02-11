@@ -67,7 +67,7 @@ for t in time_periods:
 plt.legend()
 plt.xlabel('Numero di infermieri')
 plt.ylabel('Tempo di calcolo (s)')
-plt.title("....")
+plt.title("Tempo di calcolo")
 # per fare exp su server
 plt.savefig("Time.png")
 plt.clf() # per non fare i grafici sempre sulla stessa figura 
