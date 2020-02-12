@@ -5,11 +5,9 @@ from Model import runRealData
 time_periods = [4, 8] # weeks
 num_nurses = [30, 40, 50, 60, 80, 100, 120]
 
-
-
 '''SECOND PLOT: FIXED MAX CALCULATION TIME'''
 # fixed maximum time of calculation
-max_time = 60 # 60 seconds
+max_time = 60 * 60 # 1h
 for t in time_periods:
     relative_gaps = []
     for n in num_nurses:
@@ -25,14 +23,14 @@ plt.title("Tempo massimo: {}s".format(max_time))
 # per togliere il float in valori interi delle x
 plt.xticks(num_nurses)
 # per fare exp su server
-plt.savefig("Gap_60sec.png")
+plt.savefig("Gap_1h.png")
 plt.clf() # per non fare i grafici sempre sulla stessa figura
 
 
 
 '''THIRD PLOT: FIXED MAX CALCULATION TIME (WIDE)'''
 # fixed maximum time of calculation
-max_time = 60 * 30 # 30 minutes
+max_time = 60 * 60 * 2 # 2h
 for t in time_periods:
     relative_gaps = []
     for n in num_nurses:
@@ -48,18 +46,19 @@ plt.title("Tempo massimo: {}s".format(max_time))
 # per togliere il float in valori interi delle x
 plt.xticks(num_nurses)
 # per fare exp su server
-plt.savefig("Gap_30min.png")
+plt.savefig("Gap_2h.png")
 plt.clf() # per non fare i grafici sempre sulla stessa figura
 
 
 
-'''FIRST PLOT: ...'''
+'''FIRST PLOT: TIME CALCULATION'''
 # fixed a large time_period
 # decreasing the nurses number
+max_time = 60 * 60 # 1h
 for t in time_periods:
     elapsed_times = []
     for n in num_nurses:
-        elapsed_time, absolute_gap, relative_gap = runRealData(n, t)
+        elapsed_time, absolute_gap, relative_gap = runRealData(n, t, max_time)
         elapsed_times.append(elapsed_time)
 
     plt.plot(num_nurses, elapsed_times, label=str(t)+"weeks")
@@ -70,5 +69,5 @@ plt.ylabel('Tempo di calcolo (s)')
 plt.title("Tempo di esecuzione")
 plt.xticks(num_nurses)
 # per fare exp su server
-plt.savefig("Time.png")
+plt.savefig("Time_1h.png")
 plt.clf() # per non fare i grafici sempre sulla stessa figura 
