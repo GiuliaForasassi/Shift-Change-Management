@@ -86,7 +86,7 @@ Le variabili binarie vengono usate quando si vuole rappresentare un evento media
 Siano $A$ e $B$ due eventi e $\delta_A$ e $\delta_B$ le corrispettive variabili di decisione. Esprimiamo condizioni logiche sugli eventi mediante vincoli sulle variabili di decisione corrispondenti.
 \begin{enumerate}
 \item \textit{And}\\
-Supponiamo di avere la seguente condizione logica: $A~\wedge~B$.
+Supponiamo di avere la seguente condizione logica: $A~\wedge~B$.\\
 Dalla tabella di verità (Tabella \ref{tab:tableAND}) è evidente che questa condizione è soddisfatta quando entrambi gli eventi si sono verificati, e quindi quando entrambe le variabili di decisione relative sono pari ad 1.
 
 \begin{table}[h!]
@@ -108,8 +108,9 @@ Dalla tabella di verità (Tabella \ref{tab:tableAND}) è evidente che questa con
 Questo equivale ad imporre il seguente vincolo: $\delta_A + \delta_B$.
 
 \item \textit{Or}\\
-Supponiamo di avere la condizione logica: $A~\vee~B$.
-In questo caso si può vedere che tale condizione è soddisfatta quando almeno uno dei due eventi si è verificato, e quindi quando almeno una delle due variabili è pari ad 1 (Tabella \ref{tab:tableOR}).\\\\
+Supponiamo di avere la condizione logica: $A~\vee~B$.\\
+In questo caso si può vedere che tale condizione è soddisfatta quando almeno uno dei due eventi si è verificato, e quindi quando almeno una delle due variabili è pari ad 1 (Tabella \ref{tab:tableOR}).
+\newpage
 
 \begin{table}[h!]
   \begin{center}
@@ -128,9 +129,9 @@ In questo caso si può vedere che tale condizione è soddisfatta quando almeno u
 \end{table}
 
 Questo equivale ad imporre il seguente vincolo: $\delta_A + \delta_B \geq 1$.
-\\
+
 \item \textit{Or esclusivo}\\
-Sia la seguente condizione logica: $A~\oplus~B$.
+Sia la seguente condizione logica: $A~\oplus~B$.\\
 Questa situazione è molto simile a quella appena vista ma, contrariamente a prima, le variabili decisionali non possono essere entrambe pari ad 1 (Tabella \ref{tab:tableORe}).
 
 \begin{table}[h!]

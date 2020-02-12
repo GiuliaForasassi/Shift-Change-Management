@@ -33,9 +33,7 @@ Le informazioni generali presenti riguardano i dati che sono comuni a tutte le s
 \item \textit{Tipi di turni}: ogni giorno è possibile svolgere varie tipologie di turno che corrispondono a diversi momenti della giornata. Nell'esempio in questione vengono considerate 4 tipologie di turno: early (mattina), day (giorno), late (pomeriggio) e night (notte). Per ognuno di questi sono dati:
 \begin{itemize}
 \item il numero minimo di assegnamenti consecutivi possibili, cioè il numero minimo totale di turni che ogni infermiere, secondo il proprio contratto, deve svolgere;
-\item una matrice delle successioni di turni proibiti, la quale, ad ogni infermiere che ha svolto un turno di notte, vieta di lavorare nel giorno successivo.
-Quindi le successioni di turni consentite sono: {M-M, M-P, M-N}, {P-M, P-P, P-N},
-invece quella proibita è: {N-M, N-P, N-N}. QUALI SONO LE SUCCE CONSENTITE??
+\item una matrice delle successioni di turni proibiti, la quale, ad ogni infermiere, vieta di svolgere particolari successioni di turni nell'orario.
 \end{itemize}
 
 \item \textit{Infermieri}: per ogni infermiere si conosce il nome, l'identificativo, il tipo di contratto scelto e l'insieme delle competenze possedute;
@@ -44,10 +42,9 @@ invece quella proibita è: {N-M, N-P, N-N}. QUALI SONO LE SUCCE CONSENTITE??
 \begin{itemize}
 \item head-nurse (capo infermiere);
 \item nurse (infermiere regolare);
-\item caretaker ();
+\item caretaker (?);
 \item trainee (apprendista).
 \end{itemize}
-Ovviamente se un infermiere è un apprendista del mestiere vige la regola che non può possedere le altre due competenze.
 
 \item \textit{Tipo di contratto}: vi sono varie tipologie di contratto che ogni infermiere può avere, in questo problema abbiamo considerato i seguenti:
 \begin{itemize}
@@ -85,36 +82,107 @@ In particolare queste sono rappresentate dalle condizioni a contorno, che vengon
 \subsection{Esempio}
 Per avere una visione più chiara delle informazioni di cui abbiamo bisogno per fare la programmazione dell'orario ospedaliero si illustra di seguito un esempio.
 
-Supponiamo di voler pianificare l'orario lavorativo in un periodo di tempo pari a 1 settimana avendo a disposizione 10 infermieri.
-Come abbiamo detto sopra, ogni infermiere può coprire tre tipi di turni: mattina, pomeriggio o notte e inoltre, ad ognuno di essi, è associato una tipologia di contratto tra quelli detti sopra. 
+\subsubsection*{Informazioni generali}
+Supponiamo di voler pianificare l'orario lavorativo in un periodo di tempo pari a 1 settimana avendo a disposizione 5 infermieri, che possono avere 2 tipologie di competenze:
 
-%\begin{table}[]
-%\resizebox{\textwidth}{!}{%
-%\begin{tabular}{{lcr}}
-%\toprule
-%
-%01 & Oliver & Full Time & capo infermiere, infermiere regolare
-%02 & Jack & Part Time & - infermiere regolare \\ \midrule
-%03 & Olivia & On Call & - apprendista \\ \midrule
-%04 & Emily & Full Time & - infermiera regolare \\ \midrule
-%05 & James & Part Time & - infermiera regolare \\ \midrule
-%06 & Isabella & Full Time & - apprendista \\ \midrule
-%07 & George & Full Time & - capo infermiera \\ \midrule
-%08 & Sophie & On Call & \begin{tabular}[c]{@{}c@{}}- capo infermiere\\ - infermiera regolare\end{tabular} \\ \midrule
-%09 & Thomas & Part Time & - infermiere regolare \\ \midrule
-%10 & Oscar & Full Time & - apprendista \\ \bottomrule
-%\end{tabular}%
-%}
-%\end{table}
+\begin{verbatim}
+PERIODO: 1 SETTIMANA
+NUMERO INFERMIERI = 5
+COMPETENZE: 2
+- HeadNurse
+- Nurse
+\end{verbatim}
 
+Supponiamo di avere 2 tipologie di turno, e, per ognuno di questi, sono specificati il nome e il numero minimo e massimo di assegnazioni consecutive consentite.
+Inoltre per ogni tipo di turno è data la successione dei turni proibiti, la quale specifica per ogni tipo di turno quelli che non possono essere successivi a questo.
 
+\begin{verbatim}
+TIPI DI TURNI = 3
+- Early (min: 2, max: 5)
+- Late (min: 2, max: 3)
+- Night (min: 4, max: 5)
+\end{verbatim}
 
-A seconda del tipo di contratto che ogni infermiere ha, possono cambiare le quantità dei parametri che si vogliono specificare. 
+\begin{verbatim}
+SUCCESSIONE TURNI VIETATA
+- Early: []
+- Late: [Early]
+- Night: [Early, Late]
 
+\end{verbatim}
 
+Inoltre, per ogni tipo di contratto, sono dati i seguenti dati:il numero minimo e massimo di assegnamenti possibile nel periodo selezionato, il numero minimo e massimo di giorni lavorativi consecutivi, il numero minimo e massimo di giorni liberi consecutivi, numero massimo di week-ends lavorativi e la presenza o l'assenza del week-end completo.
 
+\begin{verbatim}
+CONTRACT = 2
+- Full time: (minAss: 15, maxAss: 22), (minLav: 3, maxLav: 5), 
+				(minLib: 2, maxLib: 3), maxWknd: 2, WkndCom: True
+				
+- Part time: (minAss: 7, maxAss: 11), (minLav: 3, maxLav: 5), 
+				(minLib: 3, maxLib: 5), maxWknd: 2, WkndCom: True
+\end{verbatim}
 
+Infine, vengono specificate le informazioni relative agli infermieri, ovvero il tipo di contratto e le competenze possedute.
+\begin{verbatim}
+INFERMIERI: 5
+- Patrick: Full-time, [Head nurse, nurse]
+- Andrea: Full-time, [Head nurse, nurse]
+- Sara: Full-time, [Head nurse]
+- Milena: Full-time, [Head nurse]
+- Sofia: Full-time, [Nurse]
+\end{verbatim}
 
+\subsubsection*{Informazioni giornaliere}
+A questo punto è necessario specificare i dati relativi ai requisiti necessari e alle richieste degli infermieri.
+
+Per ogni tipo di turno, per ogni competenza vengono specificati il numero minimo e ottimo di infermieri necessari. Ovviamente questa informazione viene specificata per ogni giorno e per tutte le combinazioni tra il tipo di turno e la competenza.
+Di seguito si riporta un esempio per il turno `Early' e la competenza `Head nurse'.
+
+\begin{verbatim}
+REQUISITI NECESSARI
+- (Early, Head nurse, lun): (min: 1, opt:3)
+- (Early, Head nurse, mar): (min: 2, opt:5)
+- (Early, Head nurse, mer): (min: 3, opt:4)
+- (Early, Head nurse, gio): (min: 6, opt:7)
+- (Early, Head nurse, ven): (min: 1, opt:1)
+- (Early, Head nurse, sab): (min: 1, opt:2)
+- (Early, Head nurse, dom): (min: 1, opt:3)
+\end{verbatim}
+
+Inoltre, ogni infermiere può richiedere dei permessi: ovvero ognuno di loro può specificare il giorno e il turno in cui non vorrebbe lavorare. Inoltre, se dichiarato il turno `Any' l'infermiere vorrebbe l'intero giorno libero.
+
+\begin{verbatim}
+RICHIESTE INFERMIERI = 3
+- Patrick: (Night, Sab)
+- Andrea: (Early, Sab)
+- Sara: (Any, Dom)
+\end{verbatim}
+
+\subsubsection*{Informazioni storiche}
+Inoltre, come spiegato prima, vi sono delle informazioni precedenti al periodo selezionato.
+
+\begin{verbatim}
+STORIA
+- Patrick: [numAss: 0, numWkndLav: 0, 
+			ultimoTurno: Day, numAssCons: 0, 
+			numLavCons = 2, numLibCons: 0]
+			
+- Andrea: [numAss: 0, numWkndLav: 0, 
+			ultimoTurno: Early, numAssCons: 3, 
+			numLavCons = 3, numLibCons: 0]
+			
+- Sara: [numAss: 0, numWkndLav: 0, 
+		ultimoTurno: None, numAssCons: 0, 
+		numLavCons = 0, numLibCons: 3]
+		
+- Milena: [numAss: 0, numWkndLav: 0, 
+			ultimoTurno: Late, numAssCons: 1, 
+			numLavCons = 4, numLibCons: 0]
+			
+- Sofia: [numAss: 0, numWkndLav: 0, 
+		ultimoTurno: Day, numAssCons: 0, 
+		numLavCons = 0, numLibCons: 1]
+\end{verbatim}
 
 \section{Vincoli}
 In questo paragrafo verranno spiegati i vincoli relativi al problema di ottimizzazione in questione, alcuni dei quali sono \textit{hard} ovvero devono essere assolutamente rispettati, mentre gli altri sono \textit{soft}, ovvero si permette di violarli pagando però una penalità nella funzione obbiettivo.
@@ -189,11 +257,10 @@ Matematicamente si può scrivere:
 
 Cioè, in altre parole, un infermiere non può lavorare nei turni $t_{a}$ e $t_{b}$ in due giorni consecutivi della settimana se questa coppia di turni ($t_{a}$, $t_{b}$) appartiene alla successione di turni proibita, dove ricordiamo che le successioni di turni proibite sono le seguenti:
 \begin{itemize}
-\item mattina-notte;
-\item pomeriggio-notte;
-\item notte-notte.
+\item (Late: (Early, Day))
+\item (Night: (Early, Day, Late))
 \end{itemize}
-CORREGGERE!!
+Quindi, si può vedere che è possibile fare due o più notti di seguito.
 
 Il codice Python corrispondente è il seguente:
 \begin{lstlisting}[language=Python]
@@ -220,11 +287,11 @@ Quindi, fissati il turno $t$, il giorno $g$ e la competenza $c$, vi sono due cas
 \begin{enumerate}
 \item se il totale di assegnamenti fatti è maggiore o uguale del valore ottimo corrispondente allora non si dovrà pagare alcuna penalità, cioè:
 \begin{equation}
-se ~ \sum_{i \in I_c} a_{i, t, g} \geq opt_{t,c,g} \Longrightarrow s^{(1)}_{t, c, g} = 0
+\sum_{i \in I_c} a_{i, t, g} \geq opt_{t,c,g} \Longrightarrow s^{(1)}_{t, c, g} = 0
 \end{equation}
 \item altrimenti la penalità da pagare è data dalla differenza tra il valore ottimo e gli assegnamenti fatti, cioè: 
 \begin{equation}
-se ~ \sum_{i \in I_c} a_{i, t, g} < opt_{t,c,g} \Longrightarrow s^{(1)}_{t, c, g} = opt_{t,c,g} - \sum_{i \in I_c} a_{i, t, g}
+\sum_{i \in I_c} a_{i, t, g} < opt_{t,c,g} \Longrightarrow s^{(1)}_{t, c, g} = opt_{t,c,g} - \sum_{i \in I_c} a_{i, t, g}
 \end{equation}
 \end{enumerate}
 
@@ -306,35 +373,37 @@ Quindi vediamo in dettaglio quali vincoli è necessario imporre per gestire il n
 
 \item Se l'infermiere $i$ è stato assegnato al turno $t$ nel giorno $g$, si vuole che la variabile $L_{i, g}$ valga 1; questo corrisponde a scrivere:
 \begin{equation}
-se ~ a_{i, t, g} = 1 \Longrightarrow\ L_{i, g} = 1
+a_{i, t, g} = 1 \Longrightarrow\ L_{i, g} = 1
 \end{equation}
 Quindi fissato l'infermiere $i$, il turno $t$, e il giorno $g$, si ha:
 \begin{equation}
 L_{i, g} \geq a_{i, t, g}
 \end{equation}
 
-\item Un turno di notte corrisponde a lavorare per due giorni consecutivi.
-Quindi se il giorno $g$ l'infermiere $i$ è stato assegnato in un turno notturno, il giorno seguente deve essere contato come lavorato:\\
-\begin{equation}
-se ~ a_{i, t_{notte}, g} = 1 \Longrightarrow\ L_{i, g+1} = 1
-\end{equation}
-Fissati $i$ e $g$, possiamo scrivere:
-\begin{equation}
-L_{i, g+1} \geq a_{i, t_{notte}, g}
-\end{equation}
+%\item Un turno di notte corrisponde a lavorare per due giorni consecutivi.
+%Quindi se il giorno $g$ l'infermiere $i$ è stato assegnato in un turno notturno, il giorno seguente deve essere contato come lavorato:\\
+%\begin{equation}
+%se ~ a_{i, t_{notte}, g} = 1 \Longrightarrow\ L_{i, g+1} = 1
+%\end{equation}
+%Fissati $i$ e $g$, possiamo scrivere:
+%\begin{equation}
+%L_{i, g+1} \geq a_{i, t_{notte}, g}
+%\end{equation}
 
-\item È necessario, però, assicurarsi che $L_{i, g}$ valga 0 quando non sono stati fatti assegnamenti. Consideriamo due giorni consecutivi: supponiamo che il giorno $g$ l'infermiere $i$ non abbia lavorato e che il giorno precedente non abbia fatto il turno di notte:
+\item È necessario, però, assicurarsi che $L_{i, g}$ valga 0 quando non sono stati fatti assegnamenti.
 \begin{equation}
-se ~ a_{i, t, g} = a_{i, t_{notte}, g-1} = 0 \Longrightarrow\ L_{i, g} = 0
+a_{i, t, g} = 0 \Longrightarrow\ L_{i, g} = 0
 \end{equation}
 Questo corrisponde ad imporre il seguente vincolo:
 \begin{equation}
-L_{i, g} \leq \sum_{t \in T} a_{i, t, g} + a_{i, t_{notte}, g-1}
+L_{i, g} \leq \sum_{t \in T} a_{i, t, g} 
 \end{equation}
+
+%a_{i, t_{notte}, g-1}
 
 \item Se l'infermiere $i$ ha lavorato il giorno $g$ come richiesto dal vincolo, la penalità non deve essere pagata, quindi la differenza tra i giorni che ha lavorato e quelli in cui avrebbe dovuto lavorare per non violare il vincolo vale 0, cioè:
 \begin{equation}
-se ~ L_{i, g} = 1 \Longrightarrow\ L_{i, g}^R - L_{i, g} = 0
+L_{i, g} = 1 \Longrightarrow\ L_{i, g}^R - L_{i, g} = 0
 \end{equation}
 Quindi si ha che in generale deve valere che:
 \begin{equation}
@@ -345,7 +414,7 @@ L_{i, g}^R \geq ~ L_{i, g}
 Fissato l'infermiere $i$ e considerando l'insieme delle relative variabili $L_{i, g}^R$, ciò che ci interessa sono le transizioni dei valori da 0 a 1 le quali indicano che l'infermiere $i$ dovrebbe iniziare a lavorare per non violare il vincolo. 
 Quindi, sia $j \in \{g,.., g + minConsLav_i - 1\}$:\\
 \begin{equation}
-se ~ L_{i, g-1}^R = 0 ~ e ~ L_{i, g}^R = 1 \Longrightarrow\ L_{i, j}^R = 1
+L_{i, g-1}^R = 0 \wedge L_{i, g}^R = 1 \Longrightarrow\ L_{i, j}^R = 1
 \end{equation}
 Dato l'infermiere $i$ e il giorno $g$, generalizzando, possiamo scrivere:
 \begin{equation}
@@ -355,13 +424,13 @@ L_{i, g+n}^R \geq L_{i, g}^R - L_{i, g-1}^R
 \item Questo vincolo ha lo stesso scopo di quello sopra, però, prende in considerazione anche la storia precedente al periodo selezionato, se esiste.
 Quindi, supponendo che vi siano giorni consecutivi appartenenti allo storico e che tale numero sia minore degli assegnamenti consecutivi minimi per quell'infermiere, bisogna imporre che, il primo giorno del periodo scelto per la pianificazione, l'infermiere $i$ deve lavorare per rispettare il vincolo. Quindi, fissato $i$, segue che:
 \begin{equation}
-se ~ 0 < hTurniCons_i < minConsLav_i \Longrightarrow\ L_{i, 0}^R = 1
+0 < hTurniCons_i < minConsLav_i \Longrightarrow\ L_{i, 0}^R = 1
 \end{equation}
 
 \item Ovviamente è necessario garantire che quanto detto sopra valga anche per i giorni successivi al primo. \\
 Sia  $j \in \{1,.., minConsLav_i - hTurniCons_i - 1\}$:\\
 \begin{equation}
-se ~ L_{i, 0}^R + L_{i, g}^R <  minConsLav_i \Longrightarrow\ L_{i, j}^R = 1
+L_{i, 0}^R + L_{i, g}^R <  minConsLav_i \Longrightarrow\ L_{i, j}^R = 1
 \end{equation}
 Quindi, in questo caso, l'infermiere $i$ dovrebbe lavorare anche i giorni seguenti:
 \begin{equation}
@@ -373,8 +442,7 @@ Riassumendo quanto detto sopra, possiamo scrivere:
 \begin{gather}
 \begin{aligned}
 L_{i, g} &\geq a_{i, t, g} ~~~ \forall i \in I ~~~ \forall t \in T ~~~ \forall g \in G \\
-L_{i, g+1} &\geq a_{i, t_{notte}, g} ~~~ \forall i \in I ~~~ \forall g \in \{0,...,|G| - 2\} \\
-L_{i, g} &\leq \sum_{t \in T} a_{i, t, g} + a_{i, t_{notte}, g-1} ~~~ \forall i \in I ~~~ \forall g \in \{1,...,|G| - 1\} \\
+L_{i, g} &\leq \sum_{t \in T} a_{i, t, g} ~~~ \forall i \in I ~~~ \forall g \in \{1,...,|G| - 1\} \\
 L_{i, g}^R &\geq L_{i, g} ~~~ \forall i \in I ~~~ \forall g \in G \\
 L_{i, g+n}^R &\geq L_{i, g}^R - L_{i, g-1}^R ~~~ \forall i \in I ~~~ \forall n \in \{0,...,minConsLav_i - 1\} ~~~ \forall g \in \{1,...,|G| - n - 1\} \\
 L_{i, 0}^R &= 1 ~~~ \forall i \in I ~ tale ~ che ~ 0 < hTurniCons_i < minConsLav_i \\
@@ -382,6 +450,9 @@ L_{i, n}^R &\geq L_{i, 0}^R ~~~ \forall i \in I ~~~ \forall n \in \{1,...,minCon
 S^{(2)}_{min} &= \sum_{i \in I} \sum_{g \in G} L_{i, g}^R - L_{i, g} \\
 \end{aligned}
 \end{gather}
+
+%L_{i, g+1} &\geq a_{i, t_{notte}, g} ~~~ \forall i \in I ~~~ \forall g \in \{0,...,|G| - 2\} \\
+%+ a_{i, t_{notte}, g-1} 
  
 Il codice Python corrispondente è il seguente:
 \begin{lstlisting}[language=Python]
@@ -395,17 +466,11 @@ model.addConstrs(L[i, g] >= a[i, t, g]
             for g in G)
 
 model.addConstrs(L[i, g] <= 
-		quicksum(a[i, t, g] for t in T) + 
-			a[i, 'night', g-1]
+		quicksum(a[i, t, g] for t in T)
             for i in I
             for g in range(1, len(G)))
 
-model.addConstrs(L[i, g+1] >= a[i, 'night', g]
-            for i in I
-            for g in range(len(G) - 1))
-
 model.addConstrs(LR[i, g] >= L[i, g] for i in I for g in G)
-
 
 model.addConstrs(LR[i, g+n] >= 
 		(LR[i, g] - LR[i, g-1])
@@ -438,23 +503,23 @@ Analizziamo nel dettaglio i vincoli necessari per rispettare il limite massimo:
 \begin{itemize}
 
 \item L'idea è quella di confrontare il numero di giorni effettivamente lavorati dall'infermiere $i$ con il relativo limite massimo. Quindi, fissati...vi sono due situazioni possibili:
-\begin{itemize}
-\item [1)] se il totale di giorni consecutivi lavorati è minore o uguale al limite massimo corrispondente allora non si dovrà pagare alcuna penalità, cioè:
+\begin{enumerate}
+\item  se il totale di giorni consecutivi lavorati è minore o uguale al limite massimo corrispondente allora non si dovrà pagare alcuna penalità, cioè:
 \begin{equation}
-se ~ \sum_{bho}^b L_{i, g} \leq maxConsLav_i \Longrightarrow\ s^{(2)}max_{i, g} = 0
+\sum_{j=g-maxConsLav_i}^g L_{i, j} \leq maxConsLav_i \Longrightarrow\ s^{(2)}max_{i, g} = 0
 \end{equation}
-\item [2)] altrimenti la penalità da pagare è data dalla differenza tra il valore massimo e i giorni consecutivi effettivamente lavorati, cioè:
+\item altrimenti la penalità da pagare è data dalla differenza tra il valore massimo e i giorni consecutivi effettivamente lavorati, cioè:
 \begin{equation}
-se ~ \sum_{bho}^b L_{i, g} > maxConsLav_i \Longrightarrow\ s^{(2)}max_{i, g} = \sum_{bho}^b L_{i, g} - maxConsLav_i
+\sum_{j=g-maxConsLav_i}^g L_{i, j} > maxConsLav_i \Longrightarrow\ s^{(2)}max_{i, g} = \sum_{j=g-maxConsLav_i}^g L_{i, g} - maxConsLav_i
 \end{equation}
-E quindi chiamando $ z = \sum_{bho}^b L_{i, g} - maxConsLav_i$ segue:
+\end{enumerate}
+E quindi chiamando $ z = \sum_{j=g-maxConsLav_i}^g L_{i, g} - maxConsLav_i$ segue:
 \begin{equation}
 \begin{split}
 z \leq 0 &\Longrightarrow\ s^{(2)}max_{i, g} = 0 \\
 z > 0 &\Longrightarrow\ s^{(2)}max_{i, g} = z \\
 \end{split}
 \end{equation}
-\end{itemize}
 Da cui si può vedere che:
 \begin{equation}
 \label{eq:maxS2}
@@ -471,35 +536,41 @@ Questo corrisponde ad imporre i seguenti vincoli:
 \begin{equation}
 \begin{split}
 s^{(2)}max_{i, g} &\geq 0\\
-s^{(2)}max_{i, g} &\geq \sum_{bho}^b L_{i, g} - maxConsLav_i\\
+s^{(2)}max_{i, g} &\geq (\sum_{j=g-maxConsLav_i}^g L_{i, j}) - maxConsLav_i\\
 \end{split}
 \end{equation}
 Si può notare che, però, il primo vincolo scritto è ridondante in quanto $s^{(2)}max_{i, g}$ è una variabile binaria. Perciò basta imporre il secondo vincolo.
 
 Possiamo inoltre osservare che questi due vincoli definisco le penalità che posso determinare subito guardando solo gli assegnamenti fatti (infatti trattano gli indici che vanno da $maxConsLav$ in poi), mentre quelle che verranno spiegate di seguito dipendono dalla storia precedente (riguardano i primi giorni del nuovo periodo).
 
-\item A questo punto è necessario tener conto delle informazioni storiche precedenti al periodo selezionato, mediante le quali ci si accorge quando eventualmente si dovrebbe iniziare a pagare la penalità. Fissato $i$, sono possibili le seguenti situazioni:
+\item A questo punto è necessario tener conto delle informazioni storiche precedenti al periodo selezionato, mediante le quali ci si accorge quando eventualmente si dovrebbe iniziare a pagare la penalità. Fissato $i$, e sia $k = maxConsLav_i - hTurniCons_i$sono possibili le seguenti situazioni:
 \begin{enumerate}
-\item [1)] Se la somma tra i giorni consecutivi lavorati nello storico e i giorni consecutivi lavorati all'inizio del nuovo periodo è minore o uguale del numero massimo di giorni consecutivi lavorativi che è possibile fare per ogni infermiere, allora la penalità sarà nulla. Cioè:
+\item Se la somma tra i giorni consecutivi lavorati nello storico e i giorni consecutivi lavorati all'inizio del nuovo periodo è minore o uguale del numero massimo di giorni consecutivi lavorativi che è possibile fare per ogni infermiere, allora la penalità sarà nulla. Cioè:
 \begin{equation}
 \begin{split}
-hTurniCons_i + \sum_{} L_{i, g} \leq maxConsLav_i \Longrightarrow s^{(2)}max_{i, maxConsLav_i - hTurniCons_i} = 0 
+hTurniCons_i + \sum_{g=0}^k L_{i, g} \leq maxConsLav_i \Longrightarrow s^{(2)}max_{i, k} = 0 
 \end{split}
 \end{equation}
 
-\item [2)] Se la somma tra i giorni consecutivi lavorati nello storico e i giorni consecutivi lavorati all'inizio del nuovo periodo è maggiore del numero massimo di giorni consecutivi lavorativi che è possibile fare per ogni infermiere, allora è necessario pagare una penalità che è data dalla differenza tra quelli fatti (nel nuovo periodo e nello storico) e il numero massimo corrispondente. Cioè:
+\item Se la somma tra i giorni consecutivi lavorati nello storico e i giorni consecutivi lavorati all'inizio del nuovo periodo è maggiore del numero massimo di giorni consecutivi lavorativi che è possibile fare per ogni infermiere, allora è necessario pagare una penalità che è data dalla differenza tra quelli fatti (nel nuovo periodo e nello storico) e il numero massimo corrispondente. Cioè:
 \begin{equation}
 \begin{split}
-hTurniCons_i + \sum_{} L_{i, g} > maxConsLav_i \Longrightarrow s^{(2)}max_{i, maxConsLav_i - hTurniCons_i} = 1
+hTurniCons_i + \sum_{g=0}^k L_{i, g} > maxConsLav_i \Longrightarrow s^{(2)}max_{i, k} = 1
 \end{split}
 \end{equation}
 \end{enumerate}
+Quindi, è necessario imporre:
+\begin{equation}
+\begin{split}
+s^{(2)}max_{i, k} &\geq hTurniCons_i - maxConsLav_i + \sum_{g = 0}^{k} L_{i, g}
+\end{split}
+\end{equation}
 
 \item Nel caso in cui nel vincolo sopra si deve pagare per il giorno di indice $maxConsLav_i - hTurniCons_i$, allora si deve imporre un ulteriore vincolo che consenta di continuare a pagare dopo aver iniziato a pagare la prima volta, dall'indice $maxConsLav_i - hTurniCons_i + 1$ in poi.
 In altre parole, considerando un giorno $g$, se questo è lavorato dall'infermiere e il giorno precedente è stata pagata la penalità in quanto il vincolo non è stato rispettato, allora in questo caso la penalità del giorno $g$ deve valere 1.
-Quindi, sia $g \in \{maxConsLav_i - hTurniCons_i + 1,...,m\}$
+Quindi, sia $g \in \{maxConsLav_i - hTurniCons_i + 1,...,maxConsLav_i\}$
 \begin{equation}
-s^{(2)}max_{i, g-1} = 1~and~L_{i, g} = 1 \Longrightarrow s^{(2)}max_{i, g} = 1
+s^{(2)}max_{i, g-1} = 1 \wedge L_{i, g} = 1 \Longrightarrow s^{(2)}max_{i, g} = 1
 \end{equation}
 Poiché la somma di $L_{i, g}$ e $s^{(2)}max_{i, g-1}$ restituisce un numero intero pari a 2, è necessario considerare la seguente quantità:\\
 $L_{i, g} - s^{(2)}max_{i, g-1} - 1$
@@ -516,9 +587,9 @@ Riassumendo quanto detto sopra, possiamo scrivere:
 s^{(2)}max_{i, g} &\geq 0 ~~~ \forall i \in I ~~~ \forall g \in G \\
 s^{(2)}max_{i, g} &\geq (\sum_{j=g - maxConsLav_i}^{g} L_{i, j}) - maxConsLav_i  \\
 & \forall i \in I ~~~ \forall g \in \{maxConsLav_i,...,|G| - 1\} \\
-s^{(2)}max_{i, maxConsLav_i - hTurniCons_i} &\geq hTurniCons_i - maxConsLav_i + \sum_{g = 0}^{maxConsLav_i - hTurniCons_i} L_{i, g} ~~~ \forall i \in I \\
+s^{(2)}max_{i, k} &\geq hTurniCons_i - maxConsLav_i + \sum_{g = 0}^{k} L_{i, g} ~~~ \forall i \in I \\
 s^{(2)}max_{i, g} &\geq L_{i, g} + s^{(2)}max_{i, g-1} - 1\\ 
-\forall i \in I ~~~ \forall g \in &\{maxConsLav_i - hTurniCons_i + 1,...,maxConsLav_i - 1\} \\
+\forall i \in I ~~~ \forall g \in &\{k + 1,...,maxConsLav_i - 1\} \\
 S^{(2)}_{max} &= \sum_{i \in I} \sum_{g \in G} s^{(2)}max_{i, g} \\
 \end{aligned}
 \end{gather}
@@ -566,34 +637,51 @@ O_{i,g}^R=
 \item $S^{(3)}_{min}$: penalità complessiva riguardo al limite minimo che, moltiplicata per il peso corrispondente, deve essere pagata.
 \end{itemize}
 
+Per semplicità di lettura chiamiamo $O_{i, g} = (1-L_{i, g})$.
+
 Analizziamo i vincoli uno ad uno.
 \begin{itemize}
-\item Se l'infermiere $i$ ha avuto giorno libero il giorno $g$, 
+\item Se l'infermiere $i$ ha avuto giorno libero il giorno $g$ come richiesto dal vincolo, la penalità non deve essere pagata, quindi la differenza tra i giorni che avrebbe dovuto avere giorno libero e quelli in cui effettivamente l'ha avuto deve fare 0, cioè:
+\begin{equation}
+O_{i,g} = 1 \Longrightarrow O_{i,g}^R - O_{i,g} = 0
+\end{equation}
+Quindi si ha che in generale deve valere che:
+\begin{equation}
+O_{i,g}^R \geq O_{i,g}
+\end{equation}
+
+\item Poiché, è necessario che l'infermiere abbia un numero minimo di giorni liberi previsti, dobbiamo imporre che, una volta che ha iniziato a non lavorare, continui per almeno il numero minimo di turni richiesti.
+Fissato l'infermiere $i$  e considerando l'insieme delle relative variabili $O_{i,g}^R$, ciò che ci interessa sono le transazioni dei valori da 0 a 1, le quali indicano che l'infermiere $i$ avrebbe dovuto iniziare a prendere giorni liberi per non violare il vincolo. Quindi, sia $j \in \{g,...,g + minConsLib_i - 1\}$:
+\begin{equation}
+O_{i,g-1}^R = 0 \wedge O_{i,g}^R = 1 \Longrightarrow O_{i,j}^R = 1
+\end{equation}
+Quindi, generalizzando, possiamo scrivere:
+\begin{equation}
+O_{i,g+n}^R \geq O_{i,g}^R - O_{i,g-1}^R
+\end{equation}
+
+\item Questo vincolo prende in considerazione anche la storia precedente al periodo, se esiste. Quindi, supponendo che vi siano giorni consecutivi liberi appartenenti allo storico e che tale numero sia minore di quelli consecutivi minimi per quell'infermiere, bisogna imporre che, il primo giorno del periodo, l'infermiere $i$ non deve lavorare. 
+\begin{equation}
+0 < hLibCons_i < minConsLib_i \Longrightarrow O_{i,0}^R = 1
+\end{equation}
+
+\item Ovviamente è necessario garantire che quanto detto sopra valga anche per i giorni successivi al primo. Sia $j \in \{1,..., minConsLib_i - hLibCons_i - 1\}$
+\begin{equation}
+O_{i,0}^R + O_{i,g}^R < minConsLib_i \Longrightarrow  O_{i,j}^R = 1
+\end{equation}
+Quindi, in questo caso, l'infermiere $i$, dovrebbe avere libero anche i giorni seguenti:
+\begin{equation}
+O_{i,n}^R \geq O_{i,0}^R
+\end{equation}
 \end{itemize}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 Riassumendo si ha:
 \begin{gather}
 \begin{aligned}
 O_{i,g}^R &\geq (1 - L_{i,g}) ~~~ \forall i \in I ~~~ \forall g \in G \\
 O_{i,g+n}^R &\geq (O_{i,g}^R - O_{i,g-1}^R) ~~~ \forall i \in I ~~~ \forall n \in \{0,...,minConsLib_i - 1\} ~~~ \forall g \in \{1,...,|G| - n - 1\} \\
-O_{i,n}^R &\geq O_{i,0}^R ~~~ \forall i \in I ~~~ \forall n \in \{0,...,minConsLib_i - hLibCons_i - 1\} \\
 O_{i,0}^R &= 1 ~~~ \forall i \in I ~~~ tale ~ che ~ 0 < hLibCons_i < minConsLib_i \\
+O_{i,n}^R &\geq O_{i,0}^R ~~~ \forall i \in I ~~~ \forall n \in \{0,...,minConsLib_i - hLibCons_i - 1\} \\
 S^{(3)}_{min} &= \sum_{i \in I} \sum_{g \in G} O_{i,g}^R - (1 - L_{i,g}) \\
 \end{aligned}
 \end{gather}
@@ -627,14 +715,92 @@ S3_min = quicksum(OR[i, g] - (1 - L[i, g])
 
 \subsubsection{Limite massimo}
 Il numero dei giorni liberi consecutivi associato ad ogni infermiere deve essere minore o uguale al numero massimo di giorni liberi consecutivi disponibili.
-In termini matematici si ha:
+Si definiscono:
+\begin{itemize}
+\item $s^{(3)}max_{i, g}$: variabile binaria che indica la penalità per l'infermiere $i$ nel giorno g, nel caso il vincolo non sia rispettato;
+\item $S^{(3)}_{max}$: penalità complessiva riguardo al limite massimo, che moltiplicata per il peso corrispondente, deve essere pagata.
+Questa è data dalla somma di tutte le singole penalità $s^{(3)}max_{i, g}$.
+\end{itemize}
+
+Analizziamo nel dettaglio i vincoli necessari per rispettare il limite massimo:
+\begin{itemize}
+\item È necessario confrontare il numero di giorni effettivamente liberi dell'infermiere $i$ con il relativo limite massimo. Quindi, fissati $i$ e $g$, vi sono due casi possibili:
+\begin{enumerate}
+\item se il totale dei giorni consecutivi non lavorati è minore o uguale al limite massimo corrispondente, allora non si dovrà pagare alcuna penalità, cioè:
+\begin{equation}
+\sum_{j=g-maxConsLib_i}^g O_{i, j} \leq maxConsLib_i \Longrightarrow s^{(3)}max_{i, g} = 0
+\end{equation}
+\item altrimenti, la penalità da pagare è data dalla differenza tra il valore massimo e i giorni liberi consecutivi effettivi, cioè:
+\begin{equation}
+\sum_{j=g-maxConsLib_i}^g O_{i, j} > maxConsLib_i \Longrightarrow s^{(3)}max_{i, g} = \sum_{j=g-maxConsLib_i}^g O_{i, g} - maxConsLib_i
+\end{equation}
+\end{enumerate}
+E quindi chiamando $z = \sum_{j=g - maxConsLib_1} O_{i, j} - maxConsLib_i$, segue:
+\begin{equation}
+\begin{split}
+z \leq 0 &\Longrightarrow s^{(3)}max_{i, g} = 0\\
+z > 0 &\Longrightarrow s^{(3)}max_{i, g} = z\\
+\end{split}
+\end{equation}
+Da cui si può vedere che:
+\begin{equation}
+s^{(3)}max_{i, g} = max(0, z)
+\end{equation}
+Quindi da questo segue che:
+\begin{equation}
+\begin{split}
+s^{(3)}max_{i, g} &\geq 0\\
+s^{(3)}max_{i, g} &\geq z\\
+\end{split}
+\end{equation}
+Quindi bisogna imporre i seguenti vincoli:
+\begin{equation}
+\begin{split}
+s^{(3)}max_{i, g} &\geq 0\\
+s^{(3)}max_{i, g} &\geq \sum_{j=g-maxConsLib_i} O_{i, j} - maxConsLib_i\\
+\end{split}
+\end{equation}
+Si può notare, però, che il primo vincolo è ridondante in quanto $s^{(3)}max_{i, g}$ è una variabile binaria. Perciò basta imporre solo il secondo vincolo.
+
+Come nel vincolo precedente, adesso si deve gestire le informazioni legate alla storia.
+
+\item Fissato $i$, sono possibili le seguenti situazioni:
+\begin{enumerate}
+\item Se la somma tra i giorni liberi consecutivi dello storico e quelli fatti all'inizio del nuovo periodo è minore o uguale al numero massimo di quelli che sono possibili fare da ogni infermiere, allora la penalità sarà nulla. Cioè:
+\begin{equation}
+hLibCons_i + \sum_{g=0}^k O_{i, g} \leq maxConLib_i \Longrightarrow s^{(3)}max_{i, k} = 0
+\end{equation}
+dove $k = maxConLib_i - hLibCons_i$
+
+\item Se, invece, tale numero è maggiore del numero massimo di giorni liberi consecutivi possibili, allora è necessario pagare una panalità definita come segue:
+\begin{equation}
+hLibCons_i + \sum_{g=0}^k O_{i, g} > maxConLib_i \Longrightarrow s^{(3)}max_{i, k} = 1
+\end{equation}
+\end{enumerate}
+Quindi è necessario imporre:
+\begin{equation}
+s^{(3)}max_{i, k} \geq + hLibCons_i - maxConLib_i + \sum_{g=0}^k O_{i, g}
+\end{equation}
+
+\item Nel caso in cui il vincolo soprastante deve essere pagato per il giorno di indice $k = maxConLib_i - hLibCons_i$, allora si deve imporre un ulteriore vincolo che consenta di continuare a pagare per i giorni successivi.
+Cioè, considerando un giorno $g$, se questo è giorno libero per l'infermiere e il giorno precedente è stata pagata penalità, allora la penalità del giorno $g$ deve valere 1. Sia $g \in \{k - 1,...,maxConLib_i\}$:
+\begin{equation}
+s^{(3)}max_{i, g-1} = 1 \wedge O_{i, g} = 1 \Longrightarrow s^{(3)}max_{i, g} = 1
+\end{equation}
+Poiché la somma di $O_{i, g}$ e $s^{(3)}max_{i, g-1}$ è pari a 2, è necessario considerare la seguente quantità:
+\begin{equation}
+s^{(3)}max_{i, g} \geq O_{i, g} + s^{(3)}max_{i, g-1} - 1
+\end{equation}
+\end{itemize}
+
+Riassumendo si ha:
 \begin{gather}
 \begin{aligned}
 s^{(3)}max_{i, g} &\geq 0 ~~~ \forall i \in I ~~~ \forall g \in G \\ 
 s^{(3)}max_{i, g} &\geq (\sum_{j=g-maxConsLib_i}^g (1 - L_{i,j}) - maxConsLib_i) ~~~ \forall i \in I ~~~ \forall g \in \{maxConsLib_i,...,|G| - 1\} \\
-s^{(3)}max_{i, maxConsLib_i - hLibCons_i} &\geq hLibCons_i - maxConsLib_i + \sum_{g = 0}^{maxConsLav_i - hLibCons_i} L_{i, g} ~~~ \forall i \in I \\
+s^{(3)}max_{i, k} &\geq hLibCons_i - maxConsLib_i + \sum_{g = 0}^{k} L_{i, g} ~~~ \forall i \in I \\
 s^{(3)}max_{i, g} &\geq L_{i, g} + s^{(3)}max_{i, g-1} - 1\\ 
-\forall i \in I ~~~ \forall g \in &\{maxConsLib_i - hLibCons_i + 1,...,maxConsLib_i - 1\}\\
+\forall i \in I ~~~ \forall g \in &\{k + 1,...,maxConsLib_i - 1\}\\
 S^{(3)}_{max} &= \sum_{i \in I} \sum_{g \in G} s^{(3)}max_{i, g} \\
 \end{aligned}
 \end{gather}
@@ -710,7 +876,7 @@ Fissato l'infermiere $i$, e siano $g$ un qualunque sabato, e di conseguenza $g+1
 \begin{itemize}
 \item [1)] se l'infermiere $i$ ha lavorato solo il sabato:
 \begin{equation}
-se ~ L_{i, g} = 1 ~ e ~ L_{i, g+1} = 0 \Longrightarrow L_{i, g}^{!SAB} = 1 
+L_{i, g} = 1 \wedge L_{i, g+1} = 0 \Longrightarrow L_{i, g}^{!SAB} = 1 
 \end{equation}
 Che equivale a scrivere:
 \begin{equation}
@@ -720,7 +886,7 @@ L_{i, g}^{!SAB} \geq L_{i, g} - L_{i, g+1}
 \item [2)] se l'infermiere $i$ ha lavorato solo la domenica:
 
 \begin{equation}
-se ~ L_{i, g+1} = 1 ~ e ~ L_{i, g} = 0 \Longrightarrow L_{i, g}^{!DOM} = 1 
+L_{i, g+1} = 1 \wedge L_{i, g} = 0 \Longrightarrow L_{i, g}^{!DOM} = 1 
 \end{equation}
 Che equivale a scrivere:
 \begin{equation}
@@ -770,15 +936,15 @@ Quindi fissato l'infermiere $i$, analizziamo i due casi separatamente:
 \item [1)] \textit{Caso minimo}: se il totale degli assegnamenti fatti (ovvero dei giorni lavorati) è maggiore o uguale al minimo, la penalità $s^{(6)}_{i}$ che ogni infermiere deve pagare è nulla, mentre nel caso in cui il totale degli assegnamenti fatti sia minore del minimo richiesto la penalità è data dalla differenza tra il numero minimo e gli assegnamenti fatti. Fissato l'infermiere $i$, logicamente equivale a scrivere:
 \begin{equation}
 \begin{split}
-se ~ \sum_{g \in G} L_{i, g} \geq minTotLav_i &\Longrightarrow s^{(6)}_{i} = 0 \\
-se ~ \sum_{g \in G} L_{i, g} < minTotLav_i &\Longrightarrow s^{(6)}_{i} = minTotLav_i - \sum_{g \in G} L_{i, g} \\
+\sum_{g \in G} L_{i, g} \geq minTotLav_i &\Longrightarrow s^{(6)}_{i} = 0 \\
+\sum_{g \in G} L_{i, g} < minTotLav_i &\Longrightarrow s^{(6)}_{i} = minTotLav_i - \sum_{g \in G} L_{i, g} \\
 \end{split}
 \end{equation}
 Sia $z_1 = minTotLav_i - \sum_{g \in G} L_{i, g}$, possiamo riscrivere:
 \begin{equation}
 \begin{split}
-se ~ z_1 \leq 0 &\Longrightarrow s^{(6)}_{i} = 0 \\
-se ~ z_1 > 0 &\Longrightarrow s^{(6)}_{i} = z_1 \\
+z_1 \leq 0 &\Longrightarrow s^{(6)}_{i} = 0 \\
+z_1 > 0 &\Longrightarrow s^{(6)}_{i} = z_1 \\
 \end{split}
 \end{equation}
 Da cui si può vedere che:
@@ -804,15 +970,15 @@ s^{(6)}_{i} &\geq minTotLav_i - \sum_{g \in G} L_{i, g} \\
 \item [2)] \textit{Caso massimo}: il ragionamento è analogo a quello sopra, con la differenza che stiamo controllando il valore massimo di assegnamenti. Quindi si dovrà pagare la penalità $s^{(6)}_{i}$ soltanto quando il numero di assegnamenti fatti è maggiore del numero massimo relativo, e viene definita dalla differenza tra queste due quantità. Fissato l'infermiere $i$, logicamente equivale a scrivere:
 \begin{equation}
 \begin{split}
-se ~ \sum_{g \in G} L_{i, g} \leq maxTotLav_i &\Longrightarrow s^{(6)}_{i} = 0\\
-se ~ \sum_{g \in G} L_{i, g} > maxTotLav_i &\Longrightarrow s^{(6)}_{i} = \sum_{g \in G} L_{i, g} - maxTotLav_i\\
+\sum_{g \in G} L_{i, g} \leq maxTotLav_i &\Longrightarrow s^{(6)}_{i} = 0\\
+\sum_{g \in G} L_{i, g} > maxTotLav_i &\Longrightarrow s^{(6)}_{i} = \sum_{g \in G} L_{i, g} - maxTotLav_i\\
 \end{split}
 \end{equation}
 Sia $z_2 = \sum_{g \in G} aL_{i, g} - maxTotLav_i$, possiamo riscrivere:
 \begin{equation}
 \begin{split}
-se ~ z_2 \leq 0 &\Longrightarrow s^{(6)}_{i} = 0 \\
-se ~ z_2 > 0 &\Longrightarrow s^{(6)}_{i} = z_2 \\
+z_2 \leq 0 &\Longrightarrow s^{(6)}_{i} = 0 \\
+z_2 > 0 &\Longrightarrow s^{(6)}_{i} = z_2 \\
 \end{split}
 \end{equation}
 Da cui si può vedere che:
@@ -885,8 +1051,8 @@ L_{i, g}^w=
 Per prima cosa è necessario accertarsi che, per fissato l'infermiere $i$ e il turno $t$, la variabile definita sopra, $L_{i, g}^w$, valga realmente 1 quando l'infermiere ha lavorato solo sabato o solo la domenica. Considerando un sabato qualunque $g$, possiamo scrivere:
 \begin{equation}
 \begin{split}
-se ~ L_{i, g} = 1 &\Longrightarrow L_{i, g}^w = 1\\
-se ~ L_{i, g+1} = 1 &\Longrightarrow L_{i, g}^w = 1\\
+L_{i, g} = 1 &\Longrightarrow L_{i, g}^w = 1\\
+L_{i, g+1} = 1 &\Longrightarrow L_{i, g}^w = 1\\
 \end{split}
 \end{equation}
 Quindi questo equivale a dire:
@@ -901,15 +1067,15 @@ Successivamente il ragionamento è simile ai vincoli già spiegati.
 Cioè, è necessario pagare la penalità quando il numero di week-ends lavorati è maggiore del valore massimo. Quindi, fissato l'infermiere $i$, si ha:
 \begin{equation}
 \begin{split}
-se ~ \sum_{g \in GS} L_{i, g}^w \leq maxTotWknd_i &\Longrightarrow s^{(7)}_{i} = 0\\
-se ~ \sum_{g \in GS} L_{i, g}^w > maxTotWknd_i &\Longrightarrow s^{(7)}_{i} = \sum_{g \in GS} L_{i, g}^w - maxTotWknd_i\\
+\sum_{g \in GS} L_{i, g}^w \leq maxTotWknd_i &\Longrightarrow s^{(7)}_{i} = 0\\
+\sum_{g \in GS} L_{i, g}^w > maxTotWknd_i &\Longrightarrow s^{(7)}_{i} = \sum_{g \in GS} L_{i, g}^w - maxTotWknd_i\\
 \end{split}
 \end{equation}
 Sia $se ~ z = \sum_{g \in GS} L_{i, g}^w - maxTotWknd_i$, possiamo riscrivere:
 \begin{equation}
 \begin{split}
-se ~ z \leq 0 &\Longrightarrow s^{(7)}_{i} = 0\\
-se ~ z > 0 &\Longrightarrow s^{(7)}_{i} = z\\
+z \leq 0 &\Longrightarrow s^{(7)}_{i} = 0\\
+z > 0 &\Longrightarrow s^{(7)}_{i} = z\\
 \end{split}
 \end{equation}
 Da cui si può vedere che:
