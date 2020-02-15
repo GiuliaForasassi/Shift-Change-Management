@@ -113,12 +113,12 @@ def decode_week(week_json, w, shift_types):
     return days, minimum_nurses, optimum_nurses, permit_requests
 
 
-def read_data(num_nurses, num_time_periods):
+def read_data(num_nurses, num_time_periods, id_h, id_first_w):
     s = "n{0:0=3d}w".format(num_nurses) + str(num_time_periods)
     dir = os.path.join("Real_Data", s)
 
     # per catturare nome file della storia
-    history_file = os.path.join(dir, "H0-"+s+"-0.json")
+    history_file = os.path.join(dir, "H0-"+s+"-" + str(id_h) + ".json")
     # richiamo la funzione per catturare le info del json
     # è un dizionario che rappresenta contenuto del json
     history_json = get_json_content(history_file)
@@ -135,7 +135,8 @@ def read_data(num_nurses, num_time_periods):
     minimum_nurses = {}
     optimum_nurses = {}
     permit_requests = []
-    for w in range(4):
+    for w in range(id_first_w, id_first_w + num_time_periods):
+        w = w % 10
         week_file = os.path.join(dir, "WD-"+s+"-{}.json".format(w))
         week_json = get_json_content(week_file)
         # specifici per una settimana

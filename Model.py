@@ -2,14 +2,15 @@ from gurobipy import *
 import datetime
 from beautifultable import BeautifulTable
 from timeit import default_timer as timer
+import os
 
 from Constants import *
 from Random_Data import *
 from Preprocessing import *
 from Read_Data import read_data
 
-def runRealData(num_nurses, num_time_periods, max_time=None):
-        history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succession, optimum_nurses, permit_requests, shift_types, contract_types, skills = read_data(num_nurses, num_time_periods)
+def runRealData(num_nurses, num_time_periods, max_time=None, id_h=0, id_first_w=0):
+        history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succession, optimum_nurses, permit_requests, shift_types, contract_types, skills = read_data(num_nurses, num_time_periods, id_h, id_first_w)
         return runM(history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succession, optimum_nurses, permit_requests, shift_types, contract_types, skills, max_time)
 
 def runGRD(num_nurses, num_time_periods, max_time=None):
@@ -277,15 +278,15 @@ def runM(history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succ
 
         #TIME
         #x = datetime.datetime.now()
-        first_day = datetime.datetime(2020, 1, 6)
+        first_day = datetime.datetime(2020, 3, 2)
 
         datetimes = [first_day + datetime.timedelta(days=d) for d in range(len(days))]
-        datetimes_str = [date.strftime("%a\n%d\n%b\n%y") for date in datetimes]
+        datetimes_str = [date.strftime("%a %d %b %y") for date in datetimes]
 
         # OUTPUT DISPLAY
         table = BeautifulTable()
         table.set_style(BeautifulTable.STYLE_SEPARATED)
-        table.max_table_width = 2000
+        table.max_table_width = 70
         table.column_headers = ["Nurse"] + datetimes_str
         for nurse_id in nurses_ids:
                 nurse_shifts = []
@@ -302,11 +303,18 @@ def runM(history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succ
 
 
         # OUTPUT SOLUTION FILE
-        model.write("nurse-competition-output.sol")
+        time = timer()
+        if not os.path.exists("result"):
+                os.makedirs("result")
+        f_name = os.path.join("result", str(time) + ".txt")
+        with open(f_name, 'w') as file:
+                print(table,file=file)
+        model.write(os.path.join("result", "{}_nurse-competition-output.sol".format(time)))
 
         elapsed_time = end - start
         absolute_gap = model.ObjVal - model.ObjBound
         relative_gap = model.MIPGap
+
         return elapsed_time, absolute_gap, relative_gap
 
 
