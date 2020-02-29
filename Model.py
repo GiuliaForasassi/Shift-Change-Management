@@ -259,6 +259,7 @@ def runM(history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succ
         #obj = 0 + lambdaS1 * penalty_S1 + lambdaS2_min * penalty_S2_min + lambdaS3 * penalty_S3_min + lambdaS4 * penalty_S4 + lambdaS5 * penalty_S5 + lambdaS6 * penalty_S6_min + lambdaS6 * penalty_S6_max + lambdaS7 * penalty_S7
         obj = lambdaS1 * penalty_S1_tot + lambdaS2_min * penalty_S2_min_tot + lambdaS2_max * penalty_S2_max_tot + lambdaS3 * (penalty_S3_min + penalty_S3_max_tot) + lambdaS4 * penalty_S4 + lambdaS5 * penalty_S5 + lambdaS6 * penalty_S6_tot + lambdaS7 * penalty_S7_tot
         model.setObjective(obj, GRB.MINIMIZE)
+        
         #model.Params.MIPGap = 50 * 10 ** -2
         if max_time is not None:
                 model.Params.TimeLimit = max_time
@@ -269,9 +270,16 @@ def runM(history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succ
         print("varsInt",model.NumIntVars)
         print("varsBin",model.NumBinVars)
         print("constrsLin", model.NumConstrs)
-        print("constrQ", model.NumQConstrs)
-        print("constrsSOS", model.NumSOS)
-        print("constrsGen", model.NumGenConstrs)
+        
+        print("S1", penalty_S1_tot.getValue())
+        print("S2_min", penalty_S2_min_tot.getValue())
+        print("S2_max", penalty_S2_max_tot.getValue())
+        print("S3_min", penalty_S3_min.getValue())
+        print("S3_max", penalty_S3_max_tot.getValue())
+        print("S4", penalty_S4.getValue())
+        print("S5", penalty_S5.getValue())
+        print("S6", penalty_S6_tot.getValue())
+        print("S7", penalty_S7_tot.getValue())
         print("model", model)
 
         end = timer()
@@ -286,7 +294,7 @@ def runM(history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succ
         # OUTPUT DISPLAY
         table = BeautifulTable()
         table.set_style(BeautifulTable.STYLE_SEPARATED)
-        table.max_table_width = 70
+        table.max_table_width = 150
         table.column_headers = ["Nurse"] + datetimes_str
         for nurse_id in nurses_ids:
                 nurse_shifts = []
@@ -317,6 +325,9 @@ def runM(history, nurses, contracts, days, minimum_nurses, forbidden_shifts_succ
 
         return elapsed_time, absolute_gap, relative_gap
 
+
+if __name__ == "__main__":
+    runGRD(20, 1)
 
 
 

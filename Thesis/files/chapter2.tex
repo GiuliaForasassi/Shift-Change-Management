@@ -1,7 +1,7 @@
 \chapter{Modellazione del problema}\label{ch:chapter2}
 
 \section{Introduzione al problema}
-In questo capitolo si vuole spiegare le specifiche del problema preso in esame, introducendone prima i concetti principali e in seguito i dettagli implementativi della soluzione finale.
+In questo capitolo si vuole spiegare le specifiche del problema preso in esame, introducendone prima i concetti principali e in seguito i dettagli implementativi della soluzione finale \cite{ref:article}.
 
 Il problema affrontato riguarda la \textbf{programmazione dei turni}, che è da sempre un'attività molto importante in qualunque settore lavorativo e in particolare in quello ospedaliero, per la gestione della sanità.
 
@@ -272,6 +272,7 @@ model.addConstrs(((a[i, ta, g] + a[i, tb, g+1] <= 1)
                 if (ta, tb) in Svt)
 \end{lstlisting}
 
+%PERSONALE INSUFFICIENTE PER COPERTURA OTTIMALE
 \subsection{Personale insufficiente per copertura ottimale}
 Il seguente vincolo \textit{soft} ha l'obbiettivo di fare in modo che il numero di infermieri per ogni turno e per ciascuna competenza sia il più vicino possibile al requisito ottimale. 
 Gli infermieri extra, cioè quelli al di sopra del valore ottimale, contrariamente a quelli mancanti, non sono considerati nel costo.
@@ -502,7 +503,7 @@ Si definiscono:
 Analizziamo nel dettaglio i vincoli necessari per rispettare il limite massimo:
 \begin{itemize}
 
-\item L'idea è quella di confrontare il numero di giorni effettivamente lavorati dall'infermiere $i$ con il relativo limite massimo. Quindi, fissati...vi sono due situazioni possibili:
+\item L'idea è quella di confrontare il numero di giorni effettivamente lavorati dall'infermiere $i$ con il relativo limite massimo. Quindi, vi sono due situazioni possibili:
 \begin{enumerate}
 \item  se il totale di giorni consecutivi lavorati è minore o uguale al limite massimo corrispondente allora non si dovrà pagare alcuna penalità, cioè:
 \begin{equation}
@@ -1131,7 +1132,7 @@ model.addConstrs(s7[i] >= quicksum(Lw[i, g] for g in GS)
 S7 = quicksum(s7[i] for i in I)
 \end{lstlisting}
 
-
+\newpage 
 \section{Funzione obbiettivo}
 Lo scopo di questo programma è minimizzare la funzione obbiettivo, la quale è definita dalla somma delle penalità dei vincoli soft, moltiplicate dai \textit{pesi} corrispondenti $w_i$, che servono a calcolare il costo totale da pagare in caso alcuni di questi non vengano rispettati. Ovvero:
 \begin{gather}
@@ -1149,6 +1150,41 @@ model.setObjective(obj, GRB.MINIMIZE)
 model.optimize()
 \end{lstlisting}
 
+\section{Esempio di output}
+Supponiamo di voler pianificare l'orario di 20 infermieri per un periodo di 1 settimana, dove i turni che ogni infermiere può svolgere sono tre: mattina, pomeriggi e notte.
+In Tabella \ref{tab:TabellaOutput} riporta l'output del modello creato.
+
+\begin{table}[]
+\resizebox{\textwidth}{!}{%
+\small
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+Infermiere & \textit{Giorno 1} & \textit{Giorno 2} & \textit{Giorno 3} & \textit{Giorno 4} & \textit{Giorno 5} & \textit{Giorno 6} & \textit{Giorno 7} \\ \hline
+\textit{Michael} & {\color[HTML]{3531FF} \textbf{N}} &  &  &  & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{009901} \textbf{P}} \\ \hline
+\textit{Erma} &  & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{CB0000} M} & {\color[HTML]{3531FF} \textbf{N}} &  \\ \hline
+\textit{John} & {\color[HTML]{3531FF} \textbf{N}} &  &  &  & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{009901} \textbf{P}} \\ \hline
+\textit{Jewell} & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{3531FF} \textbf{N}} &  &  \\ \hline
+\textit{Adrian} &  &  & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{3531FF} \textbf{N}} &  &  & {\color[HTML]{CB0000} \textbf{M}} \\ \hline
+\textit{Richard} &  &  &  &  & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{3531FF} \textbf{N}} \\ \hline
+\textit{David} & {\color[HTML]{3531FF} \textbf{N}} &  &  &  & {\color[HTML]{CB0000} \textbf{M}} &  &  \\ \hline
+\textit{Nella} & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{3531FF} \textbf{N}} &  & {\color[HTML]{3531FF} \textbf{N}} &  & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{CB0000} \textbf{M}} \\ \hline
+\textit{Horacio} &  & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{3531FF} \textbf{N}} &  &  &  & {\color[HTML]{3531FF} \textbf{N}} \\ \hline
+\textit{Stanley} &  &  &  & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{009901} \textbf{P}} &  &  \\ \hline
+\textit{Jimmie} &  &  &  & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{3531FF} \textbf{N}} &  &  \\ \hline
+\textit{Becky} & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{3531FF} \textbf{N}} &  & {\color[HTML]{3531FF} \textbf{N}} \\ \hline
+\textit{Anthony} &  & {\color[HTML]{3531FF} \textbf{N}} &  & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{3531FF} \textbf{N}} &  &  \\ \hline
+\textit{Nicole} & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{3531FF} \textbf{N}} &  &  &  &  \\ \hline
+\textit{Robert} &  & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{3531FF} \textbf{N}} &  & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{CB0000} \textbf{M}} \\ \hline
+\textit{John} & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{CB0000} \textbf{M}} &  &  &  & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{CB0000} \textbf{M}} \\ \hline
+\textit{Angela} & {\color[HTML]{009901} \textbf{P}} &  & {\color[HTML]{3531FF} \textbf{N}} &  & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{3531FF} \textbf{N}} \\ \hline
+\textit{Elias} & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{3531FF} \textbf{N}} &  \\ \hline
+\textit{Patricia} & {\color[HTML]{3531FF} \textbf{N}} &  & {\color[HTML]{3531FF} \textbf{N}} &  & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{009901} \textbf{P}} \\ \hline
+\textit{Julie} & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{009901} \textbf{P}} & {\color[HTML]{CB0000} \textbf{M}} & {\color[HTML]{3531FF} \textbf{N}} &  &  & {\color[HTML]{009901} \textbf{P}} \\ \hline
+\end{tabular}%
+}
+\caption{Tabella di output}
+\label{tab:TabellaOutput}
+\end{table}
 
 
 

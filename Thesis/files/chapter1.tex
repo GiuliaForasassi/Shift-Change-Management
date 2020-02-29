@@ -30,7 +30,7 @@ h_j(x) ~ &= ~ 0 ~~~ \forall i \in \{1,..,p\} \\
 
 
 \subsection{Programmazione lineare}
-La programmazione lineare è quella branca della Ricerca Operativa che si occupa di studiare algoritmi di risoluzione per problemi di ottimizzazione lineari.
+La programmazione lineare è quella branca della Ricerca Operativa che si occupa di studiare algoritmi di risoluzione per problemi di ottimizzazione lineari \cite{ref:IntroMatProg}.
 Un problema è detto \textbf{lineare} se sia la funzione obbiettivo sia i vincoli sono funzioni lineari. Questo significa che la funzione obbiettivo può essere scritto come:
 \begin{equation}
 f ~ = ~ \sum_{i=1}^{N_v} ~ c_i ~ x_i ~ = ~ c^T ~ x 
@@ -54,7 +54,7 @@ Per questa classe di problemi esiste un algoritmo di risoluzione molto important
 
 
 \section{Programmazione Lineare Intera}
-La Programmazione Lineare Intera tratta il problema della minimizzazione (o massimizzazione) di una funzione lineare di più variabili, soggetta a vincoli di uguaglianza e disuguaglianza lineari ed alla restrizione che tutte variabili possano assumere \textbf{solo valori interi}. Si tratta dunque di problemi del tipo:
+La Programmazione Lineare Intera tratta il problema della minimizzazione (o massimizzazione) di una funzione lineare di più variabili, soggetta a vincoli di uguaglianza e disuguaglianza lineari ed alla restrizione che tutte variabili possano assumere \textbf{solo valori interi} \cite{ref:IntroLinearOptimization}. Si tratta dunque di problemi del tipo:
 \begin{equation}
 \begin{split}
 & min ~ \sum_{j=1}^n ~ c_j x_j \\
@@ -230,7 +230,7 @@ Questo equivale ad imporre il seguente vincolo: $\delta_A = \delta_B$.
 %\end{tabular}
 
 \section{Algoritmi di ILP}
-Per la soluzione di problemi ILP non esistono metodi universalmente efficienti. Molto spesso è necessario utilizzare algoritmi \textit{ad hoc} che siano in grado di sfruttare la particolare struttura del problema.
+Per la soluzione di problemi ILP non esistono metodi universalmente efficienti \cite{ref:IntroLinearOptimization}. Molto spesso è necessario utilizzare algoritmi \textit{ad hoc} che siano in grado di sfruttare la particolare struttura del problema.
 Esistono però dei metodi applicabili ad una larga classe di PLI, e questi si possono dividere in 3 principali categorie:
 \begin{enumerate}
 \item \textit{Algoritmi esatti}: questi tipi di algoritmi garantiscono di trovare una soluzione ottima, ma potrebbero richiedere un numero esponenziale di iterazioni. In questa categoria sono inclusi il metodo dei Piani di Taglio e l'algoritmo Branch and Bound;

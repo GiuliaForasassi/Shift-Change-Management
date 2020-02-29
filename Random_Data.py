@@ -1,6 +1,8 @@
 import random
 import names
 import copy
+
+
 # SCENARIO
 
 def generate_random_data(num_nurses, num_time_periods):
@@ -23,10 +25,10 @@ def generate_random_data(num_nurses, num_time_periods):
         dic['min_assignments'] = num_time_periods - 1
         dic['max_assignments'] = random.randint(6, 7) * num_time_periods
         dic['min_cons_working_days'] = random.randint(1, 3)
-        dic['max_cons_working_days'] = random.randint(2*dic['min_cons_working_days']+1, 9)
+        dic['max_cons_working_days'] = min(random.randint(2*dic['min_cons_working_days']+1, 9), 7*num_time_periods)
         dic['min_cons_days_off'] = random.randint(1, 3)
-        dic['max_cons_days_off'] = random.randint(2*dic['min_cons_days_off']+1, 9)
-        dic['max_working_week_ends'] = random.randint(round(num_time_periods*0.6), round(num_time_periods*0.75))
+        dic['max_cons_days_off'] = min(random.randint(2*dic['min_cons_days_off']+1, 9), 7*num_time_periods)
+        dic['max_working_week_ends'] = min(random.randint(round(num_time_periods*0.6), round(num_time_periods*0.75)), num_time_periods)
         dic['complete_week_ends'] = bool(random.randint(0, 1))
         contracts[contract] = dic
 
@@ -61,9 +63,9 @@ def generate_random_data(num_nurses, num_time_periods):
     # maximum_consecutive_assignment = {'morning' : random.randint(2*minimum_consecutive_assignment['morning'], 8), 'afternoon' : 2*random.randint(minimum_consecutive_assignment['afternoon'], 8), 'night' : 1}
 
     # matrix that represents the shifts succession that are forbidden
-    forbidden_shifts_succession = {'morning' : {'morning' : False, 'afternoon' : False , 'night' : False},
-                                'afternoon' : {'morning' : False, 'afternoon' : False, 'night' : False},
-                                'night' : {'morning' : True, 'afternoon' : True, 'night' : True}
+    forbidden_shifts_succession = {'Morning' : {'Morning' : False, 'Afternoon' : False , 'Night' : False},
+                                'Afternoon' : {'Morning' : False, 'Afternoon' : False, 'Night' : False},
+                                'Night' : {'Morning' : True, 'Afternoon' : True, 'Night' : True}
 
                                 }
 
@@ -78,9 +80,9 @@ def generate_random_data(num_nurses, num_time_periods):
     optimum_nurses = {}
     num_skills = len(skills)
     num_shifts = len(shift_types)
-    range_for_shift = {"morning": (max(num_nurses//(num_skills * num_shifts * 4), 1), int(1.4 * max(num_nurses//(num_skills * num_shifts * 4), 1))),
-                       "afternoon": (max(num_nurses//(num_skills * num_shifts * 4), 1), int(1.4 * max(num_nurses//(num_skills * num_shifts * 4), 1))),
-                       "night": (max(num_nurses//(num_skills * num_shifts * 5), 1), int(1.4 * max(num_nurses//(num_skills * num_shifts * 5), 1)))
+    range_for_shift = {"Morning": (max(num_nurses//(num_skills * num_shifts * 4), 1), int(1.4 * max(num_nurses//(num_skills * num_shifts * 4), 1))),
+                       "Afternoon": (max(num_nurses//(num_skills * num_shifts * 4), 1), int(1.4 * max(num_nurses//(num_skills * num_shifts * 4), 1))),
+                       "Night": (max(num_nurses//(num_skills * num_shifts * 5), 1), int(1.4 * max(num_nurses//(num_skills * num_shifts * 5), 1)))
                       }
     print("num_nurses", num_nurses)
     print("num_time_periods", num_time_periods)
@@ -111,7 +113,7 @@ def generate_random_data(num_nurses, num_time_periods):
     history = {}
     for nurse_id in range(num_nurses):
         dic = {}
-        dic['last_shift'] = ['morning', 'afternoon', 'night', None, None][random.randint(0, 4)]
+        dic['last_shift'] = ['Morning', 'Afternoon', 'Night', None, None][random.randint(0, 4)]
         if dic['last_shift'] is None:
             dic['num_cons_shift_sametype'] = 0
             dic['num_cons_shift'] = 0
